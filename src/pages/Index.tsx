@@ -1,10 +1,25 @@
+import { useState, useEffect } from "react";
+import HeroSection from "@/components/flashboard/HeroSection";
+import AudiencePricing from "@/components/flashboard/AudiencePricing";
+import CalculatorHowFaq from "@/components/flashboard/CalculatorHowFaq";
+import LeadFooter from "@/components/flashboard/LeadFooter";
+
 const Index = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-2">Начнём сначала</h1>
-        <p className="text-gray-500">Напиши, что нужно создать</p>
-      </div>
+    <div id="flashboard-landing">
+      <HeroSection scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <AudiencePricing />
+      <CalculatorHowFaq />
+      <LeadFooter />
     </div>
   );
 };
