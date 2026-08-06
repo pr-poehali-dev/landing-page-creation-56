@@ -88,6 +88,8 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [reqForm, setReqForm] = useState<Requisites>(EMPTY_REQUISITES);
   const [savingReq, setSavingReq] = useState(false);
+  const [generatingId, setGeneratingId] = useState<number | null>(null);
+  const [contractError, setContractError] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (!adminKey) {
@@ -199,6 +201,25 @@ const Admin = () => {
     if (!iso) return "—";
     const d = new Date(iso);
     return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  async function generateContract(id: number) {
+    setGeneratingId(id);
+    setContractError(prev => ({ ...prev, [id]: "" }));
+    try {
+      const res = await fetch(func2url.contract, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        body: JSON.stringify({ leadId: id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "fail");
+      window.open(data.url, "_blank");
+    } catch (e) {
+      setContractError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать договор" }));
+    } finally {
+      setGeneratingId(null);
+    }
   }
 
   async function changeStatus(id: number, status: string) {
@@ -384,7 +405,17 @@ const Admin = () => {
                     <Icon name="FileText" size={15} />
                     {editingId === l.id ? "Свернуть" : l.inn ? "Реквизиты" : "Добавить реквизиты"}
                   </button>
+                  <button
+                    onClick={() => generateContract(l.id)}
+                    disabled={generatingId === l.id || (!l.inn && !l.legalAddress)}
+                    title={!l.inn && !l.legalAddress ? "Сначала заполните реквизиты клиента" : ""}
+                    className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Icon name="FileSignature" size={15} />
+                    {generatingId === l.id ? "Формируем…" : "Сформировать договор"}
+                  </button>
                 </div>
+                {contractError[l.id] && <div className="text-red-600 text-xs mt-2">{contractError[l.id]}</div>}
 
                 {editingId === l.id && (
                   <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
