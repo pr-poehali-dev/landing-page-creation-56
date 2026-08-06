@@ -34,6 +34,15 @@
       "method": "GET",
       "path": "/",
       "expectedStatus": 200
+    },
+    {
+      "name": "Смена статуса без id возвращает ошибку",
+      "method": "PATCH",
+      "path": "/",
+      "body": {
+        "status": "estimate"
+      },
+      "expectedStatus": 400
     }
   ]
 }
