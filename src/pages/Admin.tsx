@@ -50,6 +50,7 @@ const Admin = () => {
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"date" | "price">("date");
 
   useEffect(() => {
     fetch(func2url.leads)
@@ -70,10 +71,16 @@ const Admin = () => {
     [leads]
   );
 
-  const filteredLeads = useMemo(
-    () => (statusFilter === "all" ? leads : leads.filter(l => l.status === statusFilter)),
-    [leads, statusFilter]
-  );
+  const filteredLeads = useMemo(() => {
+    const base = statusFilter === "all" ? leads : leads.filter(l => l.status === statusFilter);
+    const sorted = [...base];
+    if (sortBy === "price") {
+      sorted.sort((a, b) => (b.totalPrice || 0) - (a.totalPrice || 0));
+    } else {
+      sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    }
+    return sorted;
+  }, [leads, statusFilter, sortBy]);
 
   function formatDate(iso: string | null) {
     if (!iso) return "—";
@@ -120,22 +127,40 @@ const Admin = () => {
         )}
 
         {!loading && leads.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            <button
-              onClick={() => setStatusFilter("all")}
-              className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === "all" ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"}`}
-            >
-              Все ({counts.all})
-            </button>
-            {STATUS_ORDER.map(s => (
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex flex-wrap gap-2">
               <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === s ? "bg-slate-900 text-white" : `${STATUS_COLORS[s]} hover:opacity-80`}`}
+                onClick={() => setStatusFilter("all")}
+                className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === "all" ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"}`}
               >
-                {STATUS_LABELS[s]} ({counts[s]})
+                Все ({counts.all})
               </button>
-            ))}
+              {STATUS_ORDER.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === s ? "bg-slate-900 text-white" : `${STATUS_COLORS[s]} hover:opacity-80`}`}
+                >
+                  {STATUS_LABELS[s]} ({counts[s]})
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-full p-1">
+              <button
+                onClick={() => setSortBy("date")}
+                className={`text-xs font-medium rounded-full px-3 py-1.5 transition flex items-center gap-1 ${sortBy === "date" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+              >
+                <Icon name="Clock" size={13} />
+                По дате
+              </button>
+              <button
+                onClick={() => setSortBy("price")}
+                className={`text-xs font-medium rounded-full px-3 py-1.5 transition flex items-center gap-1 ${sortBy === "price" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+              >
+                <Icon name="ArrowDownWideNarrow" size={13} />
+                По сумме
+              </button>
+            </div>
           </div>
         )}
 
