@@ -6,8 +6,6 @@ interface HeroSectionProps {
   scrolled: boolean;
   menuOpen: boolean;
   setMenuOpen: (open: boolean) => void;
-  dark: boolean;
-  setDark: (v: boolean) => void;
 }
 
 const NAV_LINKS = [
@@ -27,7 +25,7 @@ const TICKER_ITEMS = [
   "Производство ролика от 7 500 ₽",
 ];
 
-export default function HeroSection({ scrolled, menuOpen, setMenuOpen, dark, setDark }: HeroSectionProps) {
+export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSectionProps) {
   const imgRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -66,13 +64,6 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen, dark, set
             ))}
           </nav>
           <div className="fb-hct">
-            <button className="fb-themetoggle" aria-label="Переключить тему" onClick={() => setDark(!dark)}>
-              {dark ? (
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><path d="M12 1v2m0 18v2M4.2 4.2l1.4 1.4m12.8 12.8l1.4 1.4M1 12h2m18 0h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></svg>
-              ) : (
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" /></svg>
-              )}
-            </button>
             <a className="fb-tel" href="tel:+74232925020">8 (423) 292-50-20</a>
             <a className="fb-btn" href="#lead">Разместить рекламу</a>
           </div>
@@ -87,9 +78,6 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen, dark, set
             <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}>{l.label}</a>
           ))}
           <a href="tel:+74232925020" onClick={() => setMenuOpen(false)}><b>8 (423) 292-50-20</b></a>
-          <button className="fb-themetoggle fb-themetoggle-mob" onClick={() => setDark(!dark)}>
-            {dark ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
-          </button>
           <a className="fb-btn" href="#lead" style={{ textAlign: "center" }} onClick={() => setMenuOpen(false)}>Разместить рекламу</a>
         </div>
       </header>

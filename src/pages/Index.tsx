@@ -11,10 +11,6 @@ const Index = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
-  const [dark, setDark] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("fb-theme") === "dark";
-  });
 
   useEffect(() => {
     const onScroll = () => {
@@ -25,13 +21,9 @@ const Index = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("fb-theme", dark ? "dark" : "light");
-  }, [dark]);
-
   return (
-    <div id="flashboard-landing" className={dark ? "fb-theme-dark" : ""}>
-      <HeroSection scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} dark={dark} setDark={setDark} />
+    <div id="flashboard-landing">
+      <HeroSection scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <Reveal>
         <AudiencePricing />
       </Reveal>

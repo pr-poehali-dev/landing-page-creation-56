@@ -101,27 +101,6 @@
   color: var(--fb-ink);
   background: var(--fb-bg);
   -webkit-font-smoothing: antialiased;
-  transition:
-    background 0.35s ease,
-    color 0.35s ease;
-}
-#flashboard-landing.fb-theme-dark {
-  --fb-ink: #f1f5f9;
-  --fb-mut: #94a3b8;
-  --fb-line: rgba(255, 255, 255, 0.12);
-  --fb-bg: #05070f;
-  --fb-surface: #121a2e;
-  --fb-surface-2: #0c1120;
-  --fb-surface-3: #1c2438;
-  --fb-border-soft: rgba(255, 255, 255, 0.08);
-  --fb-text-soft: #cbd5e1;
-  --fb-text-strong: #e2e8f0;
-}
-#flashboard-landing * {
-  transition:
-    background-color 0.35s ease,
-    border-color 0.35s ease,
-    color 0.35s ease;
 }
 #flashboard-landing * {
   margin: 0;
@@ -1411,40 +1390,6 @@
   #flashboard-landing .fb-stat .fb-v {
     font-size: 17px;
   }
-}
-
-/* theme toggle */
-#flashboard-landing .fb-themetoggle {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    transform 0.3s ease,
-    background 0.2s ease;
-}
-#flashboard-landing .fb-themetoggle:hover {
-  background: rgba(255, 255, 255, 0.18);
-  transform: rotate(20deg);
-}
-#flashboard-landing .fb-themetoggle-mob {
-  width: auto;
-  height: auto;
-  border-radius: 999px;
-  padding: 10px 16px;
-  display: flex;
-  gap: 8px;
-  font-size: 14px;
-  color: #e2e8f0;
-}
-#flashboard-landing .fb-themetoggle-mob:hover {
-  transform: none;
 }
 
 /* micro-interactions */
