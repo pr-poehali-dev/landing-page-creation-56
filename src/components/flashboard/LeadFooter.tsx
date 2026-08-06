@@ -1,16 +1,59 @@
 import { useState } from "react";
+import func2url from "../../../backend/func2url.json";
+
+function formatPhone(value: string) {
+  let d = value.replace(/\D/g, "");
+  if (d.startsWith("8")) d = "7" + d.slice(1);
+  if (!d.startsWith("7")) d = "7" + d;
+  d = d.slice(0, 11);
+
+  let res = "+7";
+  if (d.length > 1) res += " (" + d.slice(1, 4);
+  if (d.length >= 4) res += ")";
+  if (d.length > 4) res += " " + d.slice(4, 7);
+  if (d.length > 7) res += "-" + d.slice(7, 9);
+  if (d.length > 9) res += "-" + d.slice(9, 11);
+  return res;
+}
 
 export default function LeadFooter() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [comment, setComment] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const text = encodeURIComponent(
-      `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}\nКомментарий: ${comment || "—"}`
-    );
-    window.open(`https://wa.me/79089925020?text=${text}`, "_blank");
+    if (phone.replace(/\D/g, "").length < 11) {
+      setError("Введите телефон полностью");
+      return;
+    }
+    setError("");
+    setSending(true);
+
+    const payload = { name, phone, comment, source: "form" };
+    try {
+      const res = await fetch(func2url.leads, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("fail");
+      setSent(true);
+      const text = encodeURIComponent(
+        `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}\nКомментарий: ${comment || "—"}`
+      );
+      window.open(`https://wa.me/79089925020?text=${text}`, "_blank");
+      setName("");
+      setPhone("");
+      setComment("");
+    } catch {
+      setError("Не удалось отправить. Позвоните нам: 8 (423) 292-50-20");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -36,22 +79,43 @@ export default function LeadFooter() {
               <div className="fb-trust">Работаем с юридическими лицами и ИП. Договор, акты, отчёт о выходах, помощь с маркировкой рекламы (erid) — всё включено.</div>
             </div>
             <div className="fb-leadR">
-              <form onSubmit={handleSubmit}>
-                <div className="fb-fld">
-                  <label>Ваше имя</label>
-                  <input type="text" required placeholder="Как к вам обращаться" value={name} onChange={e => setName(e.target.value)} />
+              {sent ? (
+                <div className="fb-success">
+                  <div className="fb-success-ic">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                  </div>
+                  <h3>Заявка принята</h3>
+                  <p>Мы сохранили ваши контакты и свяжемся в течение часа в рабочее время — пришлём смету и свободные даты.</p>
+                  <button className="fb-btn fb-dark" onClick={() => setSent(false)}>Отправить ещё одну</button>
                 </div>
-                <div className="fb-fld">
-                  <label>Телефон</label>
-                  <input type="tel" required placeholder="+7 (___) ___-__-__" value={phone} onChange={e => setPhone(e.target.value)} />
-                </div>
-                <div className="fb-fld">
-                  <label>Что рекламируем? <i>(необязательно)</i></label>
-                  <textarea placeholder="Например: открытие автосервиса на Семёновской, нужны водители с Океанского" value={comment} onChange={e => setComment(e.target.value)} />
-                </div>
-                <button type="submit" className="fb-btn">Получить смету за 1 час →</button>
-                <div className="fb-pp">Нажимая кнопку, вы соглашаетесь на обработку персональных данных. Заявка откроется в WhatsApp — ничего не потеряется.</div>
-              </form>
+              ) : (
+                <form onSubmit={handleSubmit}>
+                  <div className="fb-fld">
+                    <label>Ваше имя</label>
+                    <input type="text" required placeholder="Как к вам обращаться" value={name} onChange={e => setName(e.target.value)} />
+                  </div>
+                  <div className="fb-fld">
+                    <label>Телефон</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="+7 (___) ___-__-__"
+                      value={phone}
+                      onChange={e => setPhone(formatPhone(e.target.value))}
+                      onFocus={() => { if (!phone) setPhone("+7 ("); }}
+                    />
+                  </div>
+                  <div className="fb-fld">
+                    <label>Что рекламируем? <i>(необязательно)</i></label>
+                    <textarea placeholder="Например: открытие автосервиса на Семёновской, нужны водители с Океанского" value={comment} onChange={e => setComment(e.target.value)} />
+                  </div>
+                  {error && <div className="fb-formerr">{error}</div>}
+                  <button type="submit" className="fb-btn" disabled={sending}>
+                    {sending ? "Отправляем…" : "Получить смету за 1 час →"}
+                  </button>
+                  <div className="fb-pp">Нажимая кнопку, вы соглашаетесь на обработку персональных данных. Заявка сохранится у нас и продублируется в WhatsApp.</div>
+                </form>
+              )}
             </div>
           </div>
         </div>

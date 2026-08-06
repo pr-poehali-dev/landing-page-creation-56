@@ -9,6 +9,7 @@ interface HeroSectionProps {
 const NAV_LINKS = [
   { href: "#audience", label: "Аудитория" },
   { href: "#pricing", label: "Тарифы" },
+  { href: "#map", label: "Локация" },
   { href: "#calculator", label: "Калькулятор" },
   { href: "#how", label: "Как работает" },
   { href: "#faq", label: "Вопросы" },

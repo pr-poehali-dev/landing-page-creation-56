@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "name": "Создание заявки",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Тестовый клиент",
+        "phone": "+7 (900) 123-45-67",
+        "comment": "Тестовая заявка",
+        "duration": 10,
+        "days": 30,
+        "needVideo": true,
+        "totalPrice": 105000,
+        "source": "test"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Заявка без имени возвращает ошибку",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "phone": "+7 (900) 123-45-67"
+      },
+      "expectedStatus": 400
+    },
+    {
+      "name": "Получение списка заявок",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
