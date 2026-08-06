@@ -51,14 +51,59 @@ const Admin = () => {
   const [updating, setUpdating] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "price">("date");
+  const [adminKey, setAdminKey] = useState<string | null>(() => localStorage.getItem("fb-admin-key"));
+  const [keyInput, setKeyInput] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    fetch(func2url.leads)
-      .then(r => r.json())
+    if (!adminKey) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetch(func2url.leads, { headers: { "X-Admin-Key": adminKey } })
+      .then(r => {
+        if (r.status === 403) throw new Error("forbidden");
+        return r.json();
+      })
       .then(d => setLeads(d.leads || []))
-      .catch(() => setError("Не удалось загрузить заявки"))
+      .catch(err => {
+        if (err.message === "forbidden") {
+          localStorage.removeItem("fb-admin-key");
+          setAdminKey(null);
+          setAuthError("Неверный пароль");
+        } else {
+          setError("Не удалось загрузить заявки");
+        }
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [adminKey]);
+
+  function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthError("");
+    setChecking(true);
+    fetch(func2url.leads, { headers: { "X-Admin-Key": keyInput } })
+      .then(r => {
+        if (r.status === 403) throw new Error("forbidden");
+        return r.json();
+      })
+      .then(d => {
+        localStorage.setItem("fb-admin-key", keyInput);
+        setAdminKey(keyInput);
+        setLeads(d.leads || []);
+      })
+      .catch(() => setAuthError("Неверный пароль"))
+      .finally(() => setChecking(false));
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("fb-admin-key");
+    setAdminKey(null);
+    setKeyInput("");
+    setLeads([]);
+  }
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: leads.length };
@@ -93,7 +138,7 @@ const Admin = () => {
     try {
       const res = await fetch(func2url.leads, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
         body: JSON.stringify({ id, status }),
       });
       if (!res.ok) throw new Error("fail");
@@ -105,6 +150,37 @@ const Admin = () => {
     }
   }
 
+  if (!adminKey) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <form onSubmit={handleLogin} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 w-full max-w-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <Icon name="Lock" size={20} className="text-slate-400" />
+            <h1 className="text-xl font-bold text-slate-900">Вход в CRM</h1>
+          </div>
+          <p className="text-slate-500 text-sm mb-5">Введите пароль для доступа к заявкам</p>
+          <input
+            type="password"
+            autoFocus
+            placeholder="Пароль"
+            value={keyInput}
+            onChange={e => setKeyInput(e.target.value)}
+            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-rose-400 mb-3"
+          />
+          {authError && <div className="text-red-600 text-xs mb-3">{authError}</div>}
+          <button
+            type="submit"
+            disabled={checking || !keyInput}
+            className="w-full bg-slate-900 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-slate-700 transition disabled:opacity-50"
+          >
+            {checking ? "Проверяем…" : "Войти"}
+          </button>
+          <a href="/" className="block text-center text-xs text-slate-400 hover:text-slate-600 mt-4">← На сайт</a>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -113,7 +189,13 @@ const Admin = () => {
             <h1 className="text-2xl font-bold text-slate-900">Заявки и сделки</h1>
             <p className="text-slate-500 text-sm mt-1">Всего: {leads.length}</p>
           </div>
-          <a href="/" className="text-sm text-rose-600 hover:underline">← На сайт</a>
+          <div className="flex items-center gap-4">
+            <a href="/" className="text-sm text-rose-600 hover:underline">← На сайт</a>
+            <button onClick={handleLogout} className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1">
+              <Icon name="LogOut" size={14} />
+              Выйти
+            </button>
+          </div>
         </div>
 
         {!loading && leads.length > 0 && (
