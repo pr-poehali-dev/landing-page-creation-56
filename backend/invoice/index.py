@@ -329,8 +329,9 @@ def handler(event: dict, context) -> dict:
     cur2 = conn2.cursor()
     cur2.execute(
         f"INSERT INTO lead_documents (lead_id, doc_type, file_url, doc_no) "
-        f"VALUES ({int(lead_id)}, 'invoice', '{cdn_url}', '{invoice_no_esc}')"
+        f"VALUES ({int(lead_id)}, 'invoice', '{cdn_url}', '{invoice_no_esc}') RETURNING id"
     )
+    doc_id = cur2.fetchone()[0]
     conn2.commit()
     cur2.close()
     conn2.close()
@@ -338,6 +339,6 @@ def handler(event: dict, context) -> dict:
     return {
         'statusCode': 200,
         'headers': {**cors_headers, 'Content-Type': 'application/json'},
-        'body': json.dumps({'success': True, 'url': cdn_url}, ensure_ascii=False),
+        'body': json.dumps({'success': True, 'url': cdn_url, 'docId': doc_id}, ensure_ascii=False),
         'isBase64Encoded': False
     }

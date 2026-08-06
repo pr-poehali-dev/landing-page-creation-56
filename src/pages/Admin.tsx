@@ -33,6 +33,7 @@ interface Lead {
 }
 
 interface LeadDocument {
+  id: number | null;
   type: "contract" | "invoice";
   url: string;
   no: string | null;
@@ -225,7 +226,7 @@ const Admin = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "fail");
       window.open(data.url, "_blank");
-      const newDoc: LeadDocument = { type: "contract", url: data.url, no: null, createdAt: new Date().toISOString() };
+      const newDoc: LeadDocument = { id: data.docId ?? null, type: "contract", url: data.url, no: null, createdAt: new Date().toISOString() };
       setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
     } catch (e) {
       setContractError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать договор" }));
@@ -246,12 +247,26 @@ const Admin = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "fail");
       window.open(data.url, "_blank");
-      const newDoc: LeadDocument = { type: "invoice", url: data.url, no: null, createdAt: new Date().toISOString() };
+      const newDoc: LeadDocument = { id: data.docId ?? null, type: "invoice", url: data.url, no: null, createdAt: new Date().toISOString() };
       setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
     } catch (e) {
       setInvoiceError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать счёт" }));
     } finally {
       setInvoiceGeneratingId(null);
+    }
+  }
+
+  async function deleteDocument(leadId: number, docId: number | null) {
+    if (!docId) return;
+    setLeads(prev => prev.map(l => (l.id === leadId ? { ...l, documents: l.documents.filter(d => d.id !== docId) } : l)));
+    try {
+      const res = await fetch(`${func2url.leads}?docId=${docId}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Key": adminKey || "" },
+      });
+      if (!res.ok) throw new Error("fail");
+    } catch {
+      setError("Не удалось удалить документ");
     }
   }
 
@@ -465,17 +480,26 @@ const Admin = () => {
                     <div className="text-xs font-medium text-slate-500 mb-2">Документы</div>
                     <div className="space-y-1.5">
                       {l.documents.map((doc, i) => (
-                        <a
-                          key={i}
-                          href={doc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-slate-700 hover:text-rose-600 transition"
-                        >
-                          <Icon name={doc.type === "contract" ? "FileSignature" : "Receipt"} size={14} className="text-slate-400 shrink-0" />
-                          <span className="truncate">{doc.type === "contract" ? "Договор" : "Счёт"}</span>
-                          {doc.createdAt && <span className="text-xs text-slate-400 shrink-0">{formatDate(doc.createdAt)}</span>}
-                        </a>
+                        <div key={doc.id ?? i} className="flex items-center gap-2 group">
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm text-slate-700 hover:text-rose-600 transition flex-1 min-w-0"
+                          >
+                            <Icon name={doc.type === "contract" ? "FileSignature" : "Receipt"} size={14} className="text-slate-400 shrink-0" />
+                            <span className="truncate">{doc.type === "contract" ? "Договор" : "Счёт"}</span>
+                            {doc.createdAt && <span className="text-xs text-slate-400 shrink-0">{formatDate(doc.createdAt)}</span>}
+                          </a>
+                          <button
+                            onClick={() => deleteDocument(l.id, doc.id)}
+                            disabled={!doc.id}
+                            title="Удалить документ"
+                            className="text-slate-300 hover:text-red-600 transition shrink-0 opacity-0 group-hover:opacity-100 disabled:opacity-0"
+                          >
+                            <Icon name="Trash2" size={14} />
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>

@@ -43,6 +43,12 @@
         "status": "estimate"
       },
       "expectedStatus": 403
+    },
+    {
+      "name": "Удаление документа без пароля запрещено",
+      "method": "DELETE",
+      "path": "/?docId=1",
+      "expectedStatus": 403
     }
   ]
 }

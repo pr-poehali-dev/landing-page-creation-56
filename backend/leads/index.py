@@ -9,7 +9,7 @@ def handler(event: dict, context) -> dict:
 
     cors_headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key',
         'Access-Control-Max-Age': '86400'
     }
@@ -113,15 +113,15 @@ def handler(event: dict, context) -> dict:
         } for r in rows]
 
         cur.execute(
-            "SELECT lead_id, doc_type, file_url, doc_no, created_at "
+            "SELECT id, lead_id, doc_type, file_url, doc_no, created_at "
             "FROM lead_documents ORDER BY created_at DESC"
         )
         doc_rows = cur.fetchall()
         docs_by_lead = {}
         for dr in doc_rows:
-            docs_by_lead.setdefault(dr[0], []).append({
-                'type': dr[1], 'url': dr[2], 'no': dr[3],
-                'createdAt': dr[4].isoformat() if dr[4] else None
+            docs_by_lead.setdefault(dr[1], []).append({
+                'id': dr[0], 'type': dr[2], 'url': dr[3], 'no': dr[4],
+                'createdAt': dr[5].isoformat() if dr[5] else None
             })
         for lead in leads:
             lead['documents'] = docs_by_lead.get(lead['id'], [])
@@ -202,6 +202,46 @@ def handler(event: dict, context) -> dict:
 
         query = f"UPDATE leads SET {', '.join(set_clauses)} WHERE id = {int(lead_id)}"
         cur.execute(query)
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {
+            'statusCode': 200,
+            'headers': {**cors_headers, 'Content-Type': 'application/json'},
+            'body': json.dumps({'success': True}, ensure_ascii=False),
+            'isBase64Encoded': False
+        }
+
+    if method == 'DELETE':
+        admin_key = os.environ.get('ADMIN_KEY', '')
+        headers = event.get('headers', {})
+        provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
+
+        if admin_key and provided != admin_key:
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 403,
+                'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                'body': json.dumps({'error': 'Доступ запрещён'}, ensure_ascii=False),
+                'isBase64Encoded': False
+            }
+
+        params = event.get('queryStringParameters') or {}
+        doc_id = params.get('docId')
+
+        if not doc_id:
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 400,
+                'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                'body': json.dumps({'error': 'docId обязателен'}, ensure_ascii=False),
+                'isBase64Encoded': False
+            }
+
+        cur.execute(f"DELETE FROM lead_documents WHERE id = {int(doc_id)}")
         conn.commit()
         cur.close()
         conn.close()
