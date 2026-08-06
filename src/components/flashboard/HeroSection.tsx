@@ -1,9 +1,13 @@
+import { useEffect, useRef, useState } from "react";
 import heroImage from "@/assets/flashboard-hero.jpg";
+import CountUp from "@/components/flashboard/CountUp";
 
 interface HeroSectionProps {
   scrolled: boolean;
   menuOpen: boolean;
   setMenuOpen: (open: boolean) => void;
+  dark: boolean;
+  setDark: (v: boolean) => void;
 }
 
 const NAV_LINKS = [
@@ -23,7 +27,22 @@ const TICKER_ITEMS = [
   "Производство ролика от 7 500 ₽",
 ];
 
-export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSectionProps) {
+export default function HeroSection({ scrolled, menuOpen, setMenuOpen, dark, setDark }: HeroSectionProps) {
+  const imgRef = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!imgRef.current) return;
+      const rect = imgRef.current.getBoundingClientRect();
+      const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+      setOffset(Math.max(-24, Math.min(24, center * -0.06)));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <>
       <header id="hdr" className={scrolled ? "fb-scrolled" : ""}>
@@ -47,6 +66,13 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
             ))}
           </nav>
           <div className="fb-hct">
+            <button className="fb-themetoggle" aria-label="Переключить тему" onClick={() => setDark(!dark)}>
+              {dark ? (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><path d="M12 1v2m0 18v2M4.2 4.2l1.4 1.4m12.8 12.8l1.4 1.4M1 12h2m18 0h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></svg>
+              ) : (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" /></svg>
+              )}
+            </button>
             <a className="fb-tel" href="tel:+74232925020">8 (423) 292-50-20</a>
             <a className="fb-btn" href="#lead">Разместить рекламу</a>
           </div>
@@ -61,6 +87,9 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
             <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}>{l.label}</a>
           ))}
           <a href="tel:+74232925020" onClick={() => setMenuOpen(false)}><b>8 (423) 292-50-20</b></a>
+          <button className="fb-themetoggle fb-themetoggle-mob" onClick={() => setDark(!dark)}>
+            {dark ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
+          </button>
           <a className="fb-btn" href="#lead" style={{ textAlign: "center" }} onClick={() => setMenuOpen(false)}>Разместить рекламу</a>
         </div>
       </header>
@@ -69,7 +98,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
         <div className="fb-wrap">
           <div>
             <div className="fb-badge">📍 ТЦ «Изумруд Плаза» · Океанский пр-т, 16а</div>
-            <h1>Вашу рекламу увидят до <span className="fb-grad">40 000 человек</span> каждый день</h1>
+            <h1>Вашу рекламу увидят до <span className="fb-grad"><CountUp target={40000} />{" "}человек</span> каждый день</h1>
             <p className="fb-sub">LED-экран 50 м² над входом в ТЦ «Изумруд Плаза» — на главной магистрали Владивостока. Ролик выходит каждые 5 минут с 06:00 до 23:00. Запуск за 1 день.</p>
             <div className="fb-cta">
               <a className="fb-btn" href="#lead">Разместить рекламу — от 1 625 ₽/день</a>
@@ -78,7 +107,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
             <div className="fb-stats">
               <div className="fb-stat">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                <div className="fb-v">40 000</div>
+                <div className="fb-v"><CountUp target={40000} /></div>
                 <div className="fb-l">контактов в сутки</div>
               </div>
               <div className="fb-stat">
@@ -93,8 +122,8 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
               </div>
             </div>
           </div>
-          <div className="fb-heroimg">
-            <img src={heroImage} alt="Уличный экран Флэшборд на ТЦ Изумруд Плаза, Владивосток" />
+          <div className="fb-heroimg" ref={imgRef}>
+            <img src={heroImage} alt="Уличный экран Флэшборд на ТЦ Изумруд Плаза, Владивосток" style={{ transform: `translateY(${offset}px)` }} />
             <div className="fb-imgcap">
               <div className="fb-t">Размер экрана</div>
               <div className="fb-b">5,76 × 8,64 м · видимость до 80 м</div>
