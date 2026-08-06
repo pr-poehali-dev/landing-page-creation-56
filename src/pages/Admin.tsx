@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import func2url from "../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
 
@@ -42,12 +42,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_ORDER = ["new", "estimate", "contract", "payment", "live", "completed", "lost"];
+const ACTIVE_STATUSES = ["new", "estimate", "contract", "payment", "live"];
 
 const Admin = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     fetch(func2url.leads)
@@ -56,6 +58,22 @@ const Admin = () => {
       .catch(() => setError("Не удалось загрузить заявки"))
       .finally(() => setLoading(false));
   }, []);
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: leads.length };
+    for (const s of STATUS_ORDER) c[s] = leads.filter(l => l.status === s).length;
+    return c;
+  }, [leads]);
+
+  const activeSum = useMemo(
+    () => leads.filter(l => ACTIVE_STATUSES.includes(l.status)).reduce((sum, l) => sum + (l.totalPrice || 0), 0),
+    [leads]
+  );
+
+  const filteredLeads = useMemo(
+    () => (statusFilter === "all" ? leads : leads.filter(l => l.status === statusFilter)),
+    [leads, statusFilter]
+  );
 
   function formatDate(iso: string | null) {
     if (!iso) return "—";
@@ -91,6 +109,36 @@ const Admin = () => {
           <a href="/" className="text-sm text-rose-600 hover:underline">← На сайт</a>
         </div>
 
+        {!loading && leads.length > 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mb-4 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div className="text-xs text-slate-500 uppercase tracking-wide font-medium">В работе (без учёта завершённых и потерянных)</div>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{activeSum.toLocaleString("ru-RU")} ₽</div>
+            </div>
+            <div className="text-sm text-slate-500">{counts["new"] + counts["estimate"] + counts["contract"] + counts["payment"] + counts["live"]} активных сделок</div>
+          </div>
+        )}
+
+        {!loading && leads.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              onClick={() => setStatusFilter("all")}
+              className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === "all" ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"}`}
+            >
+              Все ({counts.all})
+            </button>
+            {STATUS_ORDER.map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === s ? "bg-slate-900 text-white" : `${STATUS_COLORS[s]} hover:opacity-80`}`}
+              >
+                {STATUS_LABELS[s]} ({counts[s]})
+              </button>
+            ))}
+          </div>
+        )}
+
         {loading && <div className="text-slate-500">Загружаем…</div>}
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-4">{error}</div>}
 
@@ -101,9 +149,16 @@ const Admin = () => {
           </div>
         )}
 
-        {!loading && leads.length > 0 && (
+        {!loading && leads.length > 0 && filteredLeads.length === 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+            <Icon name="Filter" size={40} className="mx-auto text-slate-300 mb-3" />
+            <p className="text-slate-500">Нет заявок с таким статусом</p>
+          </div>
+        )}
+
+        {!loading && filteredLeads.length > 0 && (
           <div className="grid gap-3">
-            {leads.map(l => (
+            {filteredLeads.map(l => (
               <div key={l.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
