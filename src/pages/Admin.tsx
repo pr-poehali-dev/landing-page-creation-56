@@ -90,6 +90,8 @@ const Admin = () => {
   const [savingReq, setSavingReq] = useState(false);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
   const [contractError, setContractError] = useState<Record<number, string>>({});
+  const [invoiceGeneratingId, setInvoiceGeneratingId] = useState<number | null>(null);
+  const [invoiceError, setInvoiceError] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (!adminKey) {
@@ -219,6 +221,25 @@ const Admin = () => {
       setContractError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать договор" }));
     } finally {
       setGeneratingId(null);
+    }
+  }
+
+  async function generateInvoice(id: number) {
+    setInvoiceGeneratingId(id);
+    setInvoiceError(prev => ({ ...prev, [id]: "" }));
+    try {
+      const res = await fetch(func2url.invoice, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        body: JSON.stringify({ leadId: id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "fail");
+      window.open(data.url, "_blank");
+    } catch (e) {
+      setInvoiceError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать счёт" }));
+    } finally {
+      setInvoiceGeneratingId(null);
     }
   }
 
@@ -414,8 +435,18 @@ const Admin = () => {
                     <Icon name="FileSignature" size={15} />
                     {generatingId === l.id ? "Формируем…" : "Сформировать договор"}
                   </button>
+                  <button
+                    onClick={() => generateInvoice(l.id)}
+                    disabled={invoiceGeneratingId === l.id || !l.totalPrice}
+                    title={!l.totalPrice ? "У заявки не указана стоимость услуг" : ""}
+                    className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Icon name="Receipt" size={15} />
+                    {invoiceGeneratingId === l.id ? "Формируем…" : "Выставить счёт"}
+                  </button>
                 </div>
                 {contractError[l.id] && <div className="text-red-600 text-xs mt-2">{contractError[l.id]}</div>}
+                {invoiceError[l.id] && <div className="text-red-600 text-xs mt-2">{invoiceError[l.id]}</div>}
 
                 {editingId === l.id && (
                   <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
