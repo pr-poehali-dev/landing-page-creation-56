@@ -91,7 +91,9 @@ def handler(event: dict, context) -> dict:
 
         cur.execute(
             "SELECT id, name, phone, comment, duration, days, need_video, total_price, "
-            "source, status, created_at, company, start_date, end_date, placement_amount, video_amount "
+            "source, status, created_at, company, start_date, end_date, placement_amount, video_amount, "
+            "inn, kpp, ogrn, legal_address, bank_name, bank_account, bank_bik, bank_corr_account, "
+            "signer_name, signer_position "
             "FROM leads ORDER BY created_at DESC LIMIT 200"
         )
         rows = cur.fetchall()
@@ -103,7 +105,10 @@ def handler(event: dict, context) -> dict:
             'company': r[11],
             'startDate': r[12].isoformat() if r[12] else None,
             'endDate': r[13].isoformat() if r[13] else None,
-            'placementAmount': r[14], 'videoAmount': r[15]
+            'placementAmount': r[14], 'videoAmount': r[15],
+            'inn': r[16], 'kpp': r[17], 'ogrn': r[18], 'legalAddress': r[19],
+            'bankName': r[20], 'bankAccount': r[21], 'bankBik': r[22], 'bankCorrAccount': r[23],
+            'signerName': r[24], 'signerPosition': r[25]
         } for r in rows]
 
         cur.close()
@@ -133,30 +138,55 @@ def handler(event: dict, context) -> dict:
 
         body = json.loads(event.get('body', '{}'))
         lead_id = body.get('id')
-        status = body.get('status')
 
-        if not lead_id or not status:
+        if not lead_id:
             cur.close()
             conn.close()
             return {
                 'statusCode': 400,
                 'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'id и status обязательны'}, ensure_ascii=False),
+                'body': json.dumps({'error': 'id обязателен'}, ensure_ascii=False),
                 'isBase64Encoded': False
             }
 
-        if status not in valid_statuses:
+        set_clauses = []
+
+        if 'status' in body:
+            status = body.get('status')
+            if status not in valid_statuses:
+                cur.close()
+                conn.close()
+                return {
+                    'statusCode': 400,
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                    'body': json.dumps({'error': 'Недопустимый статус'}, ensure_ascii=False),
+                    'isBase64Encoded': False
+                }
+            set_clauses.append(f"status = '{status.replace(chr(39), chr(39)*2)}'")
+
+        requisite_fields = {
+            'company': 'company', 'inn': 'inn', 'kpp': 'kpp', 'ogrn': 'ogrn',
+            'legalAddress': 'legal_address', 'bankName': 'bank_name', 'bankAccount': 'bank_account',
+            'bankBik': 'bank_bik', 'bankCorrAccount': 'bank_corr_account',
+            'signerName': 'signer_name', 'signerPosition': 'signer_position'
+        }
+        for key, col in requisite_fields.items():
+            if key in body:
+                val = str(body.get(key) or '')[:500].replace("'", "''")
+                set_clauses.append(f"{col} = '{val}'" if val else f"{col} = NULL")
+
+        if not set_clauses:
             cur.close()
             conn.close()
             return {
                 'statusCode': 400,
                 'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'Недопустимый статус'}, ensure_ascii=False),
+                'body': json.dumps({'error': 'Нечего обновлять'}, ensure_ascii=False),
                 'isBase64Encoded': False
             }
 
-        status_esc = status.replace("'", "''")
-        cur.execute(f"UPDATE leads SET status = '{status_esc}' WHERE id = {int(lead_id)}")
+        query = f"UPDATE leads SET {', '.join(set_clauses)} WHERE id = {int(lead_id)}"
+        cur.execute(query)
         conn.commit()
         cur.close()
         conn.close()

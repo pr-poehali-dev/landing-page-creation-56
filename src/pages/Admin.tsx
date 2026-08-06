@@ -19,7 +19,37 @@ interface Lead {
   endDate: string | null;
   placementAmount: number | null;
   videoAmount: number | null;
+  inn: string | null;
+  kpp: string | null;
+  ogrn: string | null;
+  legalAddress: string | null;
+  bankName: string | null;
+  bankAccount: string | null;
+  bankBik: string | null;
+  bankCorrAccount: string | null;
+  signerName: string | null;
+  signerPosition: string | null;
 }
+
+interface Requisites {
+  company: string;
+  inn: string;
+  kpp: string;
+  ogrn: string;
+  legalAddress: string;
+  bankName: string;
+  bankAccount: string;
+  bankBik: string;
+  bankCorrAccount: string;
+  signerName: string;
+  signerPosition: string;
+}
+
+const EMPTY_REQUISITES: Requisites = {
+  company: "", inn: "", kpp: "", ogrn: "", legalAddress: "",
+  bankName: "", bankAccount: "", bankBik: "", bankCorrAccount: "",
+  signerName: "", signerPosition: "",
+};
 
 const STATUS_LABELS: Record<string, string> = {
   new: "Новая",
@@ -55,6 +85,9 @@ const Admin = () => {
   const [keyInput, setKeyInput] = useState("");
   const [authError, setAuthError] = useState("");
   const [checking, setChecking] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [reqForm, setReqForm] = useState<Requisites>(EMPTY_REQUISITES);
+  const [savingReq, setSavingReq] = useState(false);
 
   useEffect(() => {
     if (!adminKey) {
@@ -103,6 +136,41 @@ const Admin = () => {
     setAdminKey(null);
     setKeyInput("");
     setLeads([]);
+  }
+
+  function openRequisites(l: Lead) {
+    setEditingId(l.id);
+    setReqForm({
+      company: l.company || "",
+      inn: l.inn || "",
+      kpp: l.kpp || "",
+      ogrn: l.ogrn || "",
+      legalAddress: l.legalAddress || "",
+      bankName: l.bankName || "",
+      bankAccount: l.bankAccount || "",
+      bankBik: l.bankBik || "",
+      bankCorrAccount: l.bankCorrAccount || "",
+      signerName: l.signerName || "",
+      signerPosition: l.signerPosition || "",
+    });
+  }
+
+  async function saveRequisites(id: number) {
+    setSavingReq(true);
+    try {
+      const res = await fetch(func2url.leads, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        body: JSON.stringify({ id, ...reqForm }),
+      });
+      if (!res.ok) throw new Error("fail");
+      setLeads(prev => prev.map(l => (l.id === id ? { ...l, ...reqForm } : l)));
+      setEditingId(null);
+    } catch {
+      setError("Не удалось сохранить реквизиты");
+    } finally {
+      setSavingReq(false);
+    }
   }
 
   const counts = useMemo(() => {
@@ -298,10 +366,84 @@ const Admin = () => {
                     {l.totalPrice && <span className="bg-rose-100 text-rose-700 rounded-full px-3 py-1 font-semibold">{l.totalPrice.toLocaleString("ru-RU")} ₽</span>}
                   </div>
                 )}
+                {(l.inn || l.legalAddress || l.bankAccount) && editingId !== l.id && (
+                  <div className="mt-3 bg-slate-50 rounded-lg p-3 text-xs text-slate-600 space-y-0.5">
+                    {l.inn && <div>ИНН {l.inn}{l.kpp ? ` · КПП ${l.kpp}` : ""}{l.ogrn ? ` · ОГРН ${l.ogrn}` : ""}</div>}
+                    {l.legalAddress && <div>{l.legalAddress}</div>}
+                    {l.bankAccount && <div>Р/с {l.bankAccount}{l.bankBik ? ` · БИК ${l.bankBik}` : ""}</div>}
+                  </div>
+                )}
+
                 <div className="mt-4 flex gap-2">
                   <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition">Позвонить</a>
                   <a href="https://t.me/flashboard_vl" target="_blank" rel="noopener noreferrer" className="text-sm bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600 transition">Telegram</a>
+                  <button
+                    onClick={() => (editingId === l.id ? setEditingId(null) : openRequisites(l))}
+                    className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5"
+                  >
+                    <Icon name="FileText" size={15} />
+                    {editingId === l.id ? "Свернуть" : l.inn ? "Реквизиты" : "Добавить реквизиты"}
+                  </button>
                 </div>
+
+                {editingId === l.id && (
+                  <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-medium text-slate-500 block mb-1">Организация / ИП</label>
+                      <input value={reqForm.company} onChange={e => setReqForm({ ...reqForm, company: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="ООО «Компания»" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 block mb-1">ИНН</label>
+                      <input value={reqForm.inn} onChange={e => setReqForm({ ...reqForm, inn: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 block mb-1">КПП</label>
+                      <input value={reqForm.kpp} onChange={e => setReqForm({ ...reqForm, kpp: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-medium text-slate-500 block mb-1">ОГРН / ОГРНИП</label>
+                      <input value={reqForm.ogrn} onChange={e => setReqForm({ ...reqForm, ogrn: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-medium text-slate-500 block mb-1">Юридический адрес</label>
+                      <input value={reqForm.legalAddress} onChange={e => setReqForm({ ...reqForm, legalAddress: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-medium text-slate-500 block mb-1">Банк</label>
+                      <input value={reqForm.bankName} onChange={e => setReqForm({ ...reqForm, bankName: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 block mb-1">Р/с</label>
+                      <input value={reqForm.bankAccount} onChange={e => setReqForm({ ...reqForm, bankAccount: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 block mb-1">БИК</label>
+                      <input value={reqForm.bankBik} onChange={e => setReqForm({ ...reqForm, bankBik: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-medium text-slate-500 block mb-1">Корр. счёт</label>
+                      <input value={reqForm.bankCorrAccount} onChange={e => setReqForm({ ...reqForm, bankCorrAccount: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 block mb-1">ФИО подписанта</label>
+                      <input value={reqForm.signerName} onChange={e => setReqForm({ ...reqForm, signerName: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="Иванов Иван Иванович" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 block mb-1">Должность</label>
+                      <input value={reqForm.signerPosition} onChange={e => setReqForm({ ...reqForm, signerPosition: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="Директор" />
+                    </div>
+                    <div className="sm:col-span-2 flex gap-2 mt-1">
+                      <button
+                        onClick={() => saveRequisites(l.id)}
+                        disabled={savingReq}
+                        className="bg-rose-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-rose-700 transition disabled:opacity-50"
+                      >
+                        {savingReq ? "Сохраняем…" : "Сохранить реквизиты"}
+                      </button>
+                      <button onClick={() => setEditingId(null)} className="text-sm text-slate-500 hover:text-slate-700 px-2">Отмена</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

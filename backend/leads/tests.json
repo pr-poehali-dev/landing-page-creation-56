@@ -30,19 +30,19 @@
       "expectedStatus": 400
     },
     {
-      "name": "Получение списка заявок",
+      "name": "Получение списка заявок без пароля запрещено",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200
+      "expectedStatus": 403
     },
     {
-      "name": "Смена статуса без id возвращает ошибку",
+      "name": "Смена статуса без пароля запрещена",
       "method": "PATCH",
       "path": "/",
       "body": {
         "status": "estimate"
       },
-      "expectedStatus": 400
+      "expectedStatus": 403
     }
   ]
 }
