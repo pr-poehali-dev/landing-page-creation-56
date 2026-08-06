@@ -45,7 +45,7 @@ export default function LeadFooter() {
       const text = encodeURIComponent(
         `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}\nКомментарий: ${comment || "—"}`
       );
-      window.open(`https://wa.me/79089925020?text=${text}`, "_blank");
+      window.open(`https://t.me/flashboard_vl?text=${text}`, "_blank");
       setName("");
       setPhone("");
       setComment("");
@@ -70,11 +70,11 @@ export default function LeadFooter() {
                 </span>
                 <span><span className="fb-t">Телефон</span><br /><span className="fb-b">8 (423) 292-50-20</span></span>
               </a>
-              <a className="fb-citem" href="https://wa.me/79089925020" target="_blank" rel="noopener noreferrer">
+              <a className="fb-citem" href="https://t.me/flashboard_vl" target="_blank" rel="noopener noreferrer">
                 <span className="fb-ic">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-9 8.4 8.5 8.5 0 0 1-3.4-.7L3 21l1.8-5.6A8.38 8.38 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z" /></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
                 </span>
-                <span><span className="fb-t">WhatsApp</span><br /><span className="fb-b">+7 (908) 992-50-20</span></span>
+                <span><span className="fb-t">Telegram</span><br /><span className="fb-b">@flashboard_vl</span></span>
               </a>
               <div className="fb-trust">Работаем с юридическими лицами и ИП. Договор, акты, отчёт о выходах, помощь с маркировкой рекламы (erid) — всё включено.</div>
             </div>
@@ -113,7 +113,7 @@ export default function LeadFooter() {
                   <button type="submit" className="fb-btn" disabled={sending}>
                     {sending ? "Отправляем…" : "Получить смету за 1 час →"}
                   </button>
-                  <div className="fb-pp">Нажимая кнопку, вы соглашаетесь на обработку персональных данных. Заявка сохранится у нас и продублируется в WhatsApp.</div>
+                  <div className="fb-pp">Нажимая кнопку, вы соглашаетесь на обработку персональных данных. Заявка сохранится у нас и продублируется в Telegram.</div>
                 </form>
               )}
             </div>
@@ -150,8 +150,8 @@ export default function LeadFooter() {
               <a href="tel:+74232925020">8 (423) 292-50-20</a>
             </div>
             <div className="fb-fr">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-9 8.4 8.5 8.5 0 0 1-3.4-.7L3 21l1.8-5.6A8.38 8.38 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z" /></svg>
-              <a href="https://wa.me/79089925020">WhatsApp: +7 (908) 992-50-20</a>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
+              <a href="https://t.me/flashboard_vl">Telegram: @flashboard_vl</a>
             </div>
           </div>
           <div>

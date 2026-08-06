@@ -81,7 +81,7 @@ const Admin = () => {
                 )}
                 <div className="mt-4 flex gap-2">
                   <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition">Позвонить</a>
-                  <a href={`https://wa.me/${l.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-sm bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-600 transition">WhatsApp</a>
+                  <a href="https://t.me/flashboard_vl" target="_blank" rel="noopener noreferrer" className="text-sm bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600 transition">Telegram</a>
                 </div>
               </div>
             ))}
