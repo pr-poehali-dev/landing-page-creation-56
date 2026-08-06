@@ -93,7 +93,7 @@ def handler(event: dict, context) -> dict:
             "SELECT id, name, phone, comment, duration, days, need_video, total_price, "
             "source, status, created_at, company, start_date, end_date, placement_amount, video_amount, "
             "inn, kpp, ogrn, legal_address, bank_name, bank_account, bank_bik, bank_corr_account, "
-            "signer_name, signer_position "
+            "signer_name, signer_position, paid_amount "
             "FROM leads ORDER BY created_at DESC LIMIT 200"
         )
         rows = cur.fetchall()
@@ -109,6 +109,7 @@ def handler(event: dict, context) -> dict:
             'inn': r[16], 'kpp': r[17], 'ogrn': r[18], 'legalAddress': r[19],
             'bankName': r[20], 'bankAccount': r[21], 'bankBik': r[22], 'bankCorrAccount': r[23],
             'signerName': r[24], 'signerPosition': r[25],
+            'paidAmount': r[26] or 0,
             'documents': []
         } for r in rows]
 
@@ -189,6 +190,21 @@ def handler(event: dict, context) -> dict:
             if key in body:
                 val = str(body.get(key) or '')[:500].replace("'", "''")
                 set_clauses.append(f"{col} = '{val}'" if val else f"{col} = NULL")
+
+        if 'paidAmount' in body:
+            paid_raw = body.get('paidAmount')
+            try:
+                paid_val = max(int(paid_raw), 0) if paid_raw is not None else 0
+            except (TypeError, ValueError):
+                cur.close()
+                conn.close()
+                return {
+                    'statusCode': 400,
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                    'body': json.dumps({'error': 'Некорректная сумма оплаты'}, ensure_ascii=False),
+                    'isBase64Encoded': False
+                }
+            set_clauses.append(f"paid_amount = {paid_val}")
 
         if not set_clauses:
             cur.close()

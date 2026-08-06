@@ -29,6 +29,7 @@ interface Lead {
   bankCorrAccount: string | null;
   signerName: string | null;
   signerPosition: string | null;
+  paidAmount: number;
   documents: LeadDocument[];
 }
 
@@ -101,6 +102,9 @@ const Admin = () => {
   const [contractError, setContractError] = useState<Record<number, string>>({});
   const [invoiceGeneratingId, setInvoiceGeneratingId] = useState<number | null>(null);
   const [invoiceError, setInvoiceError] = useState<Record<number, string>>({});
+  const [editingPaidId, setEditingPaidId] = useState<number | null>(null);
+  const [paidInput, setPaidInput] = useState("");
+  const [savingPaid, setSavingPaid] = useState<number | null>(null);
 
   useEffect(() => {
     if (!adminKey) {
@@ -287,6 +291,30 @@ const Admin = () => {
     }
   }
 
+  function openPaidEdit(l: Lead) {
+    setEditingPaidId(l.id);
+    setPaidInput(l.paidAmount ? String(l.paidAmount) : "");
+  }
+
+  async function savePaidAmount(id: number) {
+    const paidAmount = Math.max(0, parseInt(paidInput || "0", 10) || 0);
+    setSavingPaid(id);
+    try {
+      const res = await fetch(func2url.leads, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        body: JSON.stringify({ id, paidAmount }),
+      });
+      if (!res.ok) throw new Error("fail");
+      setLeads(prev => prev.map(l => (l.id === id ? { ...l, paidAmount } : l)));
+      setEditingPaidId(null);
+    } catch {
+      setError("Не удалось сохранить сумму оплаты");
+    } finally {
+      setSavingPaid(null);
+    }
+  }
+
   if (!adminKey) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
@@ -435,6 +463,64 @@ const Admin = () => {
                     {l.totalPrice && <span className="bg-rose-100 text-rose-700 rounded-full px-3 py-1 font-semibold">{l.totalPrice.toLocaleString("ru-RU")} ₽</span>}
                   </div>
                 )}
+                {l.totalPrice && (
+                  <div className="mt-3 bg-slate-50 rounded-lg p-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <Icon name="Wallet" size={14} className="text-slate-400" />
+                        Оплачено {l.paidAmount.toLocaleString("ru-RU")} ₽ из {l.totalPrice.toLocaleString("ru-RU")} ₽
+                        {l.paidAmount >= l.totalPrice ? (
+                          <span className="bg-emerald-100 text-emerald-700 rounded-full px-2 py-0.5 font-medium">Оплачено</span>
+                        ) : l.paidAmount > 0 ? (
+                          <span className="bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 font-medium">Частично</span>
+                        ) : (
+                          <span className="bg-slate-200 text-slate-600 rounded-full px-2 py-0.5 font-medium">Не оплачено</span>
+                        )}
+                      </div>
+                      {editingPaidId !== l.id && (
+                        <button
+                          onClick={() => openPaidEdit(l)}
+                          className="text-xs text-slate-500 hover:text-rose-600 transition flex items-center gap-1"
+                        >
+                          <Icon name="Pencil" size={12} />
+                          Указать оплату
+                        </button>
+                      )}
+                    </div>
+                    <div className="mt-2 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${l.paidAmount >= l.totalPrice ? "bg-emerald-500" : "bg-amber-500"}`}
+                        style={{ width: `${Math.min(100, (l.paidAmount / l.totalPrice) * 100)}%` }}
+                      />
+                    </div>
+                    {editingPaidId === l.id && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={0}
+                          value={paidInput}
+                          onChange={e => setPaidInput(e.target.value)}
+                          placeholder="Сумма оплаты, ₽"
+                          className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 w-40 outline-none focus:border-rose-400"
+                        />
+                        <button
+                          onClick={() => savePaidAmount(l.id)}
+                          disabled={savingPaid === l.id}
+                          className="text-sm bg-slate-900 text-white rounded-lg px-3 py-1.5 hover:bg-slate-700 transition disabled:opacity-50"
+                        >
+                          {savingPaid === l.id ? "Сохраняем…" : "Сохранить"}
+                        </button>
+                        <button
+                          onClick={() => setEditingPaidId(null)}
+                          className="text-sm text-slate-500 hover:text-slate-700 transition"
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {(l.inn || l.legalAddress || l.bankAccount) && editingId !== l.id && (
                   <div className="mt-3 bg-slate-50 rounded-lg p-3 text-xs text-slate-600 space-y-0.5">
                     {l.inn && <div>ИНН {l.inn}{l.kpp ? ` · КПП ${l.kpp}` : ""}{l.ogrn ? ` · ОГРН ${l.ogrn}` : ""}</div>}
