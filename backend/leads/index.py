@@ -108,8 +108,23 @@ def handler(event: dict, context) -> dict:
             'placementAmount': r[14], 'videoAmount': r[15],
             'inn': r[16], 'kpp': r[17], 'ogrn': r[18], 'legalAddress': r[19],
             'bankName': r[20], 'bankAccount': r[21], 'bankBik': r[22], 'bankCorrAccount': r[23],
-            'signerName': r[24], 'signerPosition': r[25]
+            'signerName': r[24], 'signerPosition': r[25],
+            'documents': []
         } for r in rows]
+
+        cur.execute(
+            "SELECT lead_id, doc_type, file_url, doc_no, created_at "
+            "FROM lead_documents ORDER BY created_at DESC"
+        )
+        doc_rows = cur.fetchall()
+        docs_by_lead = {}
+        for dr in doc_rows:
+            docs_by_lead.setdefault(dr[0], []).append({
+                'type': dr[1], 'url': dr[2], 'no': dr[3],
+                'createdAt': dr[4].isoformat() if dr[4] else None
+            })
+        for lead in leads:
+            lead['documents'] = docs_by_lead.get(lead['id'], [])
 
         cur.close()
         conn.close()

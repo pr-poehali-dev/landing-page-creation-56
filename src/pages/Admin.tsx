@@ -29,6 +29,14 @@ interface Lead {
   bankCorrAccount: string | null;
   signerName: string | null;
   signerPosition: string | null;
+  documents: LeadDocument[];
+}
+
+interface LeadDocument {
+  type: "contract" | "invoice";
+  url: string;
+  no: string | null;
+  createdAt: string | null;
 }
 
 interface Requisites {
@@ -217,6 +225,8 @@ const Admin = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "fail");
       window.open(data.url, "_blank");
+      const newDoc: LeadDocument = { type: "contract", url: data.url, no: null, createdAt: new Date().toISOString() };
+      setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
     } catch (e) {
       setContractError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать договор" }));
     } finally {
@@ -236,6 +246,8 @@ const Admin = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "fail");
       window.open(data.url, "_blank");
+      const newDoc: LeadDocument = { type: "invoice", url: data.url, no: null, createdAt: new Date().toISOString() };
+      setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
     } catch (e) {
       setInvoiceError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать счёт" }));
     } finally {
@@ -447,6 +459,27 @@ const Admin = () => {
                 </div>
                 {contractError[l.id] && <div className="text-red-600 text-xs mt-2">{contractError[l.id]}</div>}
                 {invoiceError[l.id] && <div className="text-red-600 text-xs mt-2">{invoiceError[l.id]}</div>}
+
+                {l.documents.length > 0 && (
+                  <div className="mt-3 bg-slate-50 rounded-lg p-3">
+                    <div className="text-xs font-medium text-slate-500 mb-2">Документы</div>
+                    <div className="space-y-1.5">
+                      {l.documents.map((doc, i) => (
+                        <a
+                          key={i}
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-slate-700 hover:text-rose-600 transition"
+                        >
+                          <Icon name={doc.type === "contract" ? "FileSignature" : "Receipt"} size={14} className="text-slate-400 shrink-0" />
+                          <span className="truncate">{doc.type === "contract" ? "Договор" : "Счёт"}</span>
+                          {doc.createdAt && <span className="text-xs text-slate-400 shrink-0">{formatDate(doc.createdAt)}</span>}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {editingId === l.id && (
                   <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">

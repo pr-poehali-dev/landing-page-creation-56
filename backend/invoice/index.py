@@ -324,6 +324,17 @@ def handler(event: dict, context) -> dict:
     )
     cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{file_key}"
 
+    invoice_no_esc = str(invoice_no).replace("'", "''")
+    conn2 = psycopg2.connect(dsn)
+    cur2 = conn2.cursor()
+    cur2.execute(
+        f"INSERT INTO lead_documents (lead_id, doc_type, file_url, doc_no) "
+        f"VALUES ({int(lead_id)}, 'invoice', '{cdn_url}', '{invoice_no_esc}')"
+    )
+    conn2.commit()
+    cur2.close()
+    conn2.close()
+
     return {
         'statusCode': 200,
         'headers': {**cors_headers, 'Content-Type': 'application/json'},
