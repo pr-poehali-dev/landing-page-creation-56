@@ -89,7 +89,7 @@ def build_items(lead):
     return items
 
 
-def generate_act_pdf(act_no, act_dt, customer_name, items, contract_no=None):
+def generate_act_pdf(act_no, act_dt, customer_name, items, contract_no=None, contract_date=None):
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4,
                              leftMargin=20 * mm, rightMargin=20 * mm,
@@ -112,7 +112,12 @@ def generate_act_pdf(act_no, act_dt, customer_name, items, contract_no=None):
     elements.append(Paragraph("об оказании услуг", ParagraphStyle('sub', fontName='OpenSans', fontSize=10, leading=13, alignment=1)))
     elements.append(Spacer(1, 6 * mm))
 
-    contract_text = f" в рамках договора № {contract_no}" if contract_no else ""
+    if contract_no and contract_date:
+        contract_text = f" в рамках договора № {contract_no} от {contract_date}"
+    elif contract_no:
+        contract_text = f" в рамках договора № {contract_no}"
+    else:
+        contract_text = ""
     elements.append(Paragraph(
         f"Исполнитель: <b>{EXECUTOR['full_name']}, ИНН {EXECUTOR['inn']}, {EXECUTOR['address']}</b>",
         styles['normal10']
@@ -294,11 +299,12 @@ def handler(event: dict, context) -> dict:
         }
 
     cur.execute(
-        f"SELECT doc_no FROM lead_documents WHERE lead_id = {int(lead_id)} AND doc_type = 'contract' "
+        f"SELECT doc_no, created_at FROM lead_documents WHERE lead_id = {int(lead_id)} AND doc_type = 'contract' "
         "ORDER BY created_at DESC LIMIT 1"
     )
     contract_row = cur.fetchone()
     contract_no = contract_row[0] if contract_row else None
+    contract_date = contract_row[1].strftime('%d.%m.%Y') if contract_row and contract_row[1] else None
     cur.close()
     conn.close()
 
@@ -310,7 +316,7 @@ def handler(event: dict, context) -> dict:
     else:
         act_dt = datetime.now().date()
 
-    pdf_bytes = generate_act_pdf(act_no, act_dt, customer_name, items, contract_no)
+    pdf_bytes = generate_act_pdf(act_no, act_dt, customer_name, items, contract_no, contract_date)
 
     s3 = boto3.client(
         's3',
