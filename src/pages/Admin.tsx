@@ -35,7 +35,7 @@ interface Lead {
 
 interface LeadDocument {
   id: number | null;
-  type: "contract" | "invoice";
+  type: "contract" | "invoice" | "act";
   url: string;
   no: string | null;
   createdAt: string | null;
@@ -102,6 +102,8 @@ const Admin = () => {
   const [contractError, setContractError] = useState<Record<number, string>>({});
   const [invoiceGeneratingId, setInvoiceGeneratingId] = useState<number | null>(null);
   const [invoiceError, setInvoiceError] = useState<Record<number, string>>({});
+  const [actGeneratingId, setActGeneratingId] = useState<number | null>(null);
+  const [actError, setActError] = useState<Record<number, string>>({});
   const [editingPaidId, setEditingPaidId] = useState<number | null>(null);
   const [paidInput, setPaidInput] = useState("");
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
@@ -257,6 +259,27 @@ const Admin = () => {
       setInvoiceError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать счёт" }));
     } finally {
       setInvoiceGeneratingId(null);
+    }
+  }
+
+  async function generateAct(id: number) {
+    setActGeneratingId(id);
+    setActError(prev => ({ ...prev, [id]: "" }));
+    try {
+      const res = await fetch(func2url.act, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        body: JSON.stringify({ leadId: id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "fail");
+      window.open(data.url, "_blank");
+      const newDoc: LeadDocument = { id: data.docId ?? null, type: "act", url: data.url, no: null, createdAt: new Date().toISOString() };
+      setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
+    } catch (e) {
+      setActError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать акт" }));
+    } finally {
+      setActGeneratingId(null);
     }
   }
 
@@ -557,9 +580,19 @@ const Admin = () => {
                     <Icon name="Receipt" size={15} />
                     {invoiceGeneratingId === l.id ? "Формируем…" : "Выставить счёт"}
                   </button>
+                  <button
+                    onClick={() => generateAct(l.id)}
+                    disabled={actGeneratingId === l.id || !l.totalPrice}
+                    title={!l.totalPrice ? "У заявки не указана стоимость услуг" : ""}
+                    className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Icon name="ClipboardCheck" size={15} />
+                    {actGeneratingId === l.id ? "Формируем…" : "Сформировать акт"}
+                  </button>
                 </div>
                 {contractError[l.id] && <div className="text-red-600 text-xs mt-2">{contractError[l.id]}</div>}
                 {invoiceError[l.id] && <div className="text-red-600 text-xs mt-2">{invoiceError[l.id]}</div>}
+                {actError[l.id] && <div className="text-red-600 text-xs mt-2">{actError[l.id]}</div>}
 
                 {l.documents.length > 0 && (
                   <div className="mt-3 bg-slate-50 rounded-lg p-3">
@@ -573,8 +606,8 @@ const Admin = () => {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-sm text-slate-700 hover:text-rose-600 transition flex-1 min-w-0"
                           >
-                            <Icon name={doc.type === "contract" ? "FileSignature" : "Receipt"} size={14} className="text-slate-400 shrink-0" />
-                            <span className="truncate">{doc.type === "contract" ? "Договор" : "Счёт"}</span>
+                            <Icon name={doc.type === "contract" ? "FileSignature" : doc.type === "invoice" ? "Receipt" : "ClipboardCheck"} size={14} className="text-slate-400 shrink-0" />
+                            <span className="truncate">{doc.type === "contract" ? "Договор" : doc.type === "invoice" ? "Счёт" : "Акт"}</span>
                             {doc.createdAt && <span className="text-xs text-slate-400 shrink-0">{formatDate(doc.createdAt)}</span>}
                           </a>
                           <button
