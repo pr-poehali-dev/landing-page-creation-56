@@ -56,7 +56,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
                 <circle cx="12" cy="13" r="1" fill="#fff" />
               </svg>
             </b>
-            Флэшборд
+            <span translate="no">Флэшборд</span>
           </a>
           <nav>
             {NAV_LINKS.map(l => (

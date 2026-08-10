@@ -135,7 +135,7 @@ export default function LeadFooter() {
                   <circle cx="12" cy="13" r="1" fill="#fff" />
                 </svg>
               </b>
-              Флэшборд
+              <span translate="no">Флэшборд</span>
             </a>
             <p style={{ marginTop: 14, lineHeight: 1.6 }}>Реклама на уличных экранах Владивостока. Оператор — коммуникационная группа Pacific Media.</p>
           </div>
@@ -158,7 +158,7 @@ export default function LeadFooter() {
             <div className="fb-fh">Экран работает</div>
             <div className="fb-fr">Ежедневно, 06:00–23:00</div>
             <div className="fb-fr">Рекламный блок — каждые 5 минут</div>
-            <div className="fb-copy">© {new Date().getFullYear()} Pacific Media · Флэшборд. Цены на сайте не являются публичной офертой.</div>
+            <div className="fb-copy">© {new Date().getFullYear()} Pacific Media · <span translate="no">Флэшборд</span>. Цены на сайте не являются публичной офертой.</div>
           </div>
         </div>
       </footer>
