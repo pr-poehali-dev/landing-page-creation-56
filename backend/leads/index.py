@@ -206,6 +206,14 @@ def handler(event: dict, context) -> dict:
                 }
             set_clauses.append(f"paid_amount = {paid_val}")
 
+            if 'status' not in body:
+                cur.execute(f"SELECT total_price, status FROM leads WHERE id = {int(lead_id)}")
+                cur_row = cur.fetchone()
+                if cur_row:
+                    total_price, current_status = cur_row[0], cur_row[1]
+                    if total_price and paid_val >= total_price and current_status not in ('live', 'completed', 'lost', 'payment'):
+                        set_clauses.append("status = 'payment'")
+
         if not set_clauses:
             cur.close()
             conn.close()
@@ -216,8 +224,9 @@ def handler(event: dict, context) -> dict:
                 'isBase64Encoded': False
             }
 
-        query = f"UPDATE leads SET {', '.join(set_clauses)} WHERE id = {int(lead_id)}"
+        query = f"UPDATE leads SET {', '.join(set_clauses)} WHERE id = {int(lead_id)} RETURNING status"
         cur.execute(query)
+        new_status = cur.fetchone()[0]
         conn.commit()
         cur.close()
         conn.close()
@@ -225,7 +234,7 @@ def handler(event: dict, context) -> dict:
         return {
             'statusCode': 200,
             'headers': {**cors_headers, 'Content-Type': 'application/json'},
-            'body': json.dumps({'success': True}, ensure_ascii=False),
+            'body': json.dumps({'success': True, 'status': new_status}, ensure_ascii=False),
             'isBase64Encoded': False
         }
 

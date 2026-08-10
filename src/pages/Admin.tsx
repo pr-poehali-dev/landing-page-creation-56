@@ -329,7 +329,8 @@ const Admin = () => {
         body: JSON.stringify({ id, paidAmount }),
       });
       if (!res.ok) throw new Error("fail");
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, paidAmount } : l)));
+      const data = await res.json();
+      setLeads(prev => prev.map(l => (l.id === id ? { ...l, paidAmount, status: data.status ?? l.status } : l)));
       setEditingPaidId(null);
     } catch {
       setError("Не удалось сохранить сумму оплаты");
