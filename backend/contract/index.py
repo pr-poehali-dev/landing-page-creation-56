@@ -2,30 +2,17 @@ import json
 import os
 import io
 import time
+import base64
 import psycopg2
 import boto3
 from docx import Document
+from template_data import TEMPLATE_B64
 
 MONTHS_RU = ["", "января", "февраля", "марта", "апреля", "мая", "июня",
              "июля", "августа", "сентября", "октября", "ноября", "декабря"]
 
-_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATE_PATH = os.path.join(_BASE_DIR, "templates", "dogovor_template.docx")
-
-
 def resolve_template():
-    candidates = [
-        TEMPLATE_PATH,
-        os.path.join(_BASE_DIR, "dogovor_template.docx"),
-        os.path.join(os.getcwd(), "templates", "dogovor_template.docx"),
-        "/function/code/templates/dogovor_template.docx",
-    ]
-    for path in candidates:
-        if os.path.isfile(path):
-            return path
-    raise FileNotFoundError(
-        "Шаблон договора не найден. Проверено: " + "; ".join(candidates)
-    )
+    return io.BytesIO(base64.b64decode(TEMPLATE_B64))
 
 
 def parse_date(s):
