@@ -14,9 +14,9 @@ export default function MapComparison() {
       <section className="fb-gray" id="map">
         <div className="fb-wrap">
           <div className="fb-center" style={{ maxWidth: 640, margin: "0 auto" }}>
-            <div className="fb-kicker">Где стоит экран</div>
+            <div className="fb-kicker">Где расположен экран</div>
             <h2>Океанский проспект, 16а</h2>
-            <p className="fb-lead">Перекрёсток с улицей Семёновской — точка, через которую проходит весь центр города.</p>
+            <p className="fb-lead">Перекрёсток с улицей Семёновской — точка, в которой сходятся интенсивные автомобильные, автобусные и пешеходные потоки со всего центра Владивостока.</p>
           </div>
           <div className="fb-mapgrid">
             <div className="fb-mapbox">
@@ -55,7 +55,7 @@ export default function MapComparison() {
                 </div>
                 <div>
                   <b>Что рядом</b>
-                  <p>Остановка «ТЦ Изумруд» (маршруты 15, 15к, 22, 29), БЦ Fresh Plaza, жилой массив центра.</p>
+                  <p>Остановка «ТЦ Изумруд» (19 маршрутов автобусов), ТЦ «Изумруд Плаза», БЦ Fresh Plaza, жилой массив центра.</p>
                 </div>
               </div>
               <a className="fb-btn fb-dark" href="https://yandex.ru/maps/?text=Владивосток, Океанский проспект, 16а" target="_blank" rel="noopener noreferrer">Открыть в Яндекс.Картах</a>
