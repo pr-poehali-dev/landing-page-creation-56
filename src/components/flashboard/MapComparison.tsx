@@ -99,7 +99,7 @@ export default function MapComparison() {
               <div className="fb-cmp-us">
                 <span className="fb-cmp-badge">Медиафасад «Флэшборд»</span>
               </div>
-              <div className="fb-cmp-them">Баннер или щит</div>
+              <div className="fb-cmp-them">Биллборд</div>
             </div>
             {COMPARE_ROWS.map((r) => (
               <div className="fb-cmp-row" key={r.label}>
