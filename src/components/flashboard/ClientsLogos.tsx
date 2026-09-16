@@ -4,6 +4,16 @@ const LOGOS = [
   "logo-sambery.png",
   "logo-sts.png",
   "logo-dns.png",
+  "logo-wildberries.png",
+  "logo-vtb.png",
+  "logo-tochka.png",
+  "logo-tele2.png",
+  "logo-tbank.png",
+  "logo-sber.png",
+  "logo-pyaterochka.png",
+  "logo-gazprombank.png",
+  "logo-ursa.jpg",
+  "logo-izumrud.jpg",
 ];
 
 export default function ClientsLogos() {
