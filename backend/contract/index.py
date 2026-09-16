@@ -9,7 +9,23 @@ from docx import Document
 MONTHS_RU = ["", "января", "февраля", "марта", "апреля", "мая", "июня",
              "июля", "августа", "сентября", "октября", "ноября", "декабря"]
 
-TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "templates", "dogovor_template.docx")
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_PATH = os.path.join(_BASE_DIR, "templates", "dogovor_template.docx")
+
+
+def resolve_template():
+    candidates = [
+        TEMPLATE_PATH,
+        os.path.join(_BASE_DIR, "dogovor_template.docx"),
+        os.path.join(os.getcwd(), "templates", "dogovor_template.docx"),
+        "/function/code/templates/dogovor_template.docx",
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    raise FileNotFoundError(
+        "Шаблон договора не найден. Проверено: " + "; ".join(candidates)
+    )
 
 
 def parse_date(s):
@@ -52,7 +68,7 @@ def build_requisites_text(lead):
 
 
 def fill_contract(lead, contract_no, sign_dt):
-    doc = Document(TEMPLATE_PATH)
+    doc = Document(resolve_template())
     p = doc.paragraphs
 
     day = f"{sign_dt[2]:02d}"
