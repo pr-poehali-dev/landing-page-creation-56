@@ -1,5 +1,5 @@
 const LOGOS = [
-  "logo-1.png",
+  "logo-1.jpg",
   "logo-2.png",
   "logo-3.png",
   "logo-4.png",
