@@ -1,10 +1,9 @@
 const LOGOS = [
-  "logo-1.jpg",
-  "logo-2.png",
-  "logo-3.png",
-  "logo-4.png",
-  "logo-5.png",
-  "logo-6.png",
+  "logo-remi.png",
+  "logo-yandexgo.png",
+  "logo-sambery.png",
+  "logo-sts.png",
+  "logo-dns.png",
 ];
 
 export default function ClientsLogos() {
