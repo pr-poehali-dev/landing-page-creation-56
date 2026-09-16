@@ -64,7 +64,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
             ))}
           </nav>
           <div className="fb-hct">
-            <a className="fb-tel" href="tel:+74232925020">8 (423) 292-50-20</a>
+            <a className="fb-tel" href="tel:+79089925020">+7 908 992 50 20</a>
             <a className="fb-btn" href="#lead">Разместить рекламу</a>
           </div>
           <button className="fb-burger" aria-label="Меню" onClick={() => setMenuOpen(!menuOpen)}>
@@ -77,7 +77,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}>{l.label}</a>
           ))}
-          <a href="tel:+74232925020" onClick={() => setMenuOpen(false)}><b>8 (423) 292-50-20</b></a>
+          <a href="tel:+79089925020" onClick={() => setMenuOpen(false)}><b>+7 908 992 50 20</b></a>
           <a className="fb-btn" href="#lead" style={{ textAlign: "center" }} onClick={() => setMenuOpen(false)}>Разместить рекламу</a>
         </div>
       </header>
