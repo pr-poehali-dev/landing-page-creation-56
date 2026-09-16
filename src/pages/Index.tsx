@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import HeroSection from "@/components/flashboard/HeroSection";
 import AudiencePricing from "@/components/flashboard/AudiencePricing";
+import ClientsLogos from "@/components/flashboard/ClientsLogos";
 import MapComparison from "@/components/flashboard/MapComparison";
 import CalculatorHowFaq from "@/components/flashboard/CalculatorHowFaq";
 import LeadFooter from "@/components/flashboard/LeadFooter";
@@ -26,6 +27,9 @@ const Index = () => {
       <HeroSection scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <Reveal>
         <AudiencePricing />
+      </Reveal>
+      <Reveal>
+        <ClientsLogos />
       </Reveal>
       <Reveal>
         <MapComparison />

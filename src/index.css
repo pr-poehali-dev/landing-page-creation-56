@@ -533,6 +533,48 @@
 #flashboard-landing .fb-gray {
   background: var(--fb-surface-2);
 }
+
+/* clients logos */
+#flashboard-landing .fb-logogrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 18px;
+  margin-top: 40px;
+  align-items: center;
+}
+#flashboard-landing .fb-logoitem {
+  background: var(--fb-surface);
+  border: 1px solid var(--fb-border-soft);
+  border-radius: 14px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+}
+#flashboard-landing .fb-logoitem img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition:
+    filter 0.2s,
+    opacity 0.2s;
+}
+#flashboard-landing .fb-logoitem:hover img {
+  filter: grayscale(0);
+  opacity: 1;
+}
+@media (max-width: 860px) {
+  #flashboard-landing .fb-logogrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  #flashboard-landing .fb-logogrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 #flashboard-landing .fb-plans {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
