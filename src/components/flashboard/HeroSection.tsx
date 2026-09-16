@@ -100,8 +100,8 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
               </div>
               <div className="fb-stat">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
-                <div className="fb-v">5 мин</div>
-                <div className="fb-l">каждый цикл — ваш ролик</div>
+                <div className="fb-v">от 5 дней</div>
+                <div className="fb-l">размещение</div>
               </div>
               <div className="fb-stat">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M17 2l-5 5-5-5" /></svg>
