@@ -449,6 +449,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 18px;
 }
+#flashboard-landing .fb-cards-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
 #flashboard-landing .fb-card {
   background: var(--fb-surface);
   border: 1px solid var(--fb-border-soft);
@@ -1387,7 +1390,8 @@
   #flashboard-landing .fb-leadcard {
     grid-template-columns: 1fr;
   }
-  #flashboard-landing .fb-cards {
+  #flashboard-landing .fb-cards,
+  #flashboard-landing .fb-cards-3 {
     grid-template-columns: 1fr;
   }
   #flashboard-landing .fb-plans {
