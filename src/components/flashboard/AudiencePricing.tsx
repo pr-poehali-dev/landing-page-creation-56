@@ -6,8 +6,8 @@ const AUDIENCE_CARDS = [
   },
   {
     icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="13" rx="3" /><path d="M3 17l-1 4m19-4l1 4M7 21h10" /><circle cx="8" cy="13" r="1" fill="currentColor" /><circle cx="16" cy="13" r="1" fill="currentColor" /></svg>,
-    title: "Конечная остановка 4 маршрутов",
-    desc: "Остановка «ТЦ Изумруд» прямо под экраном — маршруты 15, 15к, 22, 29, включая связку с островом Русский. Люди ждут автобус лицом к экрану по 5–10 минут.",
+    title: "Остановка «ТЦ Изумруд» прямо под экраном",
+    desc: "19 маршрутов автобусов и маршрутных такси, включая связку с островом Русский. Люди ждут транспорт по 5–10 минут.",
   },
   {
     icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /><path d="M9 21V12h6v9" /></svg>,
@@ -59,7 +59,7 @@ export default function AudiencePricing() {
           <div style={{ maxWidth: 640 }}>
             <div className="fb-kicker">Почему эта точка работает</div>
             <h2>Экран стоит там, где людям <span style={{ color: "var(--fb-rose)" }}>некуда деть глаза</span></h2>
-            <p className="fb-lead">Владивосток — самый автомобильный город России: 566 машин на 1000 жителей. Уличный экран здесь видит больше людей, чем в любом другом городе страны.</p>
+            <p className="fb-lead">Владивосток — самый автомобильный город России: 566 машин на 1000 жителей.</p>
           </div>
           <div className="fb-grid2">
             <div className="fb-cards">
@@ -73,11 +73,10 @@ export default function AudiencePricing() {
             </div>
             <div className="fb-panel">
               <div className="fb-pk">Аудитория экрана</div>
-              <div className="fb-prow"><span>Автомобилисты и пассажиры авто</span><b>19–31 тыс./сутки</b></div>
-              <div className="fb-prow"><span>Пассажиры общественного транспорта</span><b>~4 тыс./сутки</b></div>
-              <div className="fb-prow"><span>Пешеходы и посетители ТЦ</span><b>3–5 тыс./сутки</b></div>
-              <div className="fb-ptotal"><span style={{ fontWeight: 600 }}>Итого потенциальных контактов</span><b>до 40 000</b></div>
-              <div className="fb-note">✓ Оценка по транспортным и пешеходным потокам точки. Точные данные — по результатам замера, который проводим для крупных кампаний.</div>
+              <div className="fb-prow"><span>Автомобили через весь узел</span><b>18–25 тыс. ТС/сутки</b></div>
+              <div className="fb-prow"><span>Только поток по Океанскому проспекту</span><b>около 16–20 тыс. ТС/сутки</b></div>
+              <div className="fb-prow"><span>Пешеходные пересечения вокруг узла</span><b>10–20 тыс./сутки</b></div>
+              <div className="fb-note">✓ Аналитическая оценка по транспортным и пешеходным потокам локации.</div>
             </div>
           </div>
         </div>
