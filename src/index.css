@@ -609,6 +609,36 @@
   color: #94a3b8;
   margin-top: 4px;
 }
+#flashboard-landing .fb-plan .fb-tiers {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--fb-line);
+  border-bottom: 1px solid var(--fb-line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#flashboard-landing .fb-plan.fb-hot .fb-tiers {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+#flashboard-landing .fb-plan .fb-tierrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--fb-mut);
+}
+#flashboard-landing .fb-plan.fb-hot .fb-tierrow {
+  color: #cbd5e1;
+}
+#flashboard-landing .fb-plan .fb-tierrow b {
+  font-weight: 700;
+  color: var(--fb-ink);
+}
+#flashboard-landing .fb-plan.fb-hot .fb-tierrow b {
+  color: #fff;
+}
 #flashboard-landing .fb-plan ul {
   list-style: none;
   margin: 22px 0;

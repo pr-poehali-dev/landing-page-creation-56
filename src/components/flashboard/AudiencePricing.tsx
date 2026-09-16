@@ -27,27 +27,36 @@ const PLANS = [
     name: "Старт",
     duration: "5 секунд",
     price: "1 625 ₽",
-    perMonth: "48 750 ₽/мес",
-    perThousand: "от 41 ₽ за 1000 контактов",
-    features: ["204 выхода ролика в день", "Каждый цикл — каждые 5 минут", "Фотоотчёт о выходах", "Идеально для акций и анонсов"],
+    tiers: [
+      { days: "7 дней", price: "11 327 ₽" },
+      { days: "14 дней", price: "22 750 ₽" },
+      { days: "30 дней", price: "48 750 ₽" },
+    ],
+    features: ["204+ выхода ролика в день", "Каждый цикл — каждые 5 минут", "Фотоотчёт о выходах", "Идеально для акций и анонсов"],
   },
   {
     hot: true,
     name: "Оптимум",
     duration: "10 секунд",
     price: "3 250 ₽",
-    perMonth: "97 500 ₽/мес",
-    perThousand: "полноценная подача оффера",
-    features: ["204 выхода ролика в день", "Хватает на оффер + условия + адрес", "Видеоотчёт о выходах", "Приоритетная позиция в блоке"],
+    tiers: [
+      { days: "7 дней", price: "22 750 ₽" },
+      { days: "14 дней", price: "45 500 ₽" },
+      { days: "30 дней", price: "97 500 ₽" },
+    ],
+    features: ["204+ выхода ролика в день", "Хватает на оффер + условия + адрес", "Видеоотчёт о выходах", "Приоритетная позиция в блоке"],
   },
   {
     hot: false,
     name: "Максимум",
-    duration: "15–20 секунд",
-    price: "от 4 875 ₽",
-    perMonth: "от 146 250 ₽/мес",
-    perThousand: "формат мини-ролика",
-    features: ["204 выхода в день", "Сюжет с демонстрацией продукта", "Расширенный отчёт", "Помощь с производством ролика"],
+    duration: "15 секунд",
+    price: "4 875 ₽",
+    tiers: [
+      { days: "7 дней", price: "34 125 ₽" },
+      { days: "14 дней", price: "68 250 ₽" },
+      { days: "30 дней", price: "146 250 ₽" },
+    ],
+    features: ["204+ выхода в день", "Сюжет с демонстрацией продукта", "Расширенный отчёт", "Помощь с производством ролика"],
   },
 ];
 
@@ -86,8 +95,8 @@ export default function AudiencePricing() {
         <div className="fb-wrap">
           <div className="fb-center" style={{ maxWidth: 680, margin: "0 auto" }}>
             <div className="fb-kicker">Тарифы</div>
-            <h2>Цена понятна сразу — без медиапланов и скрытых доплат</h2>
-            <p className="fb-lead">Рекламный блок — 5 минут, ваш ролик выходит в каждом: 204 раза в день, 6 120 раз в месяц.</p>
+            <h2>Цена понятна сразу — без скрытых доплат</h2>
+            <p className="fb-lead">Рекламный блок — 5 минут, ваш ролик выходит в каждом: 204+ показа в день, 6 120 раз в месяц.</p>
           </div>
           <div className="fb-plans">
             {PLANS.map((p, i) => (
@@ -96,8 +105,11 @@ export default function AudiencePricing() {
                 <div className="fb-nm" style={p.hot ? { color: "#fb7185" } : undefined}>{p.name}</div>
                 <div className="fb-tm">{p.duration}</div>
                 <div className="fb-pr"><b>{p.price}</b><span>в день</span></div>
-                <div className="fb-pm">{p.perMonth}</div>
-                <div className="fb-pc">{p.perThousand}</div>
+                <ul className="fb-tiers">
+                  {p.tiers.map((t, j) => (
+                    <li key={j} className="fb-tierrow"><span>{t.days}</span><b>{t.price}</b></li>
+                  ))}
+                </ul>
                 <ul>
                   {p.features.map((f, j) => <li key={j}>{f}</li>)}
                 </ul>
