@@ -1,0 +1,70 @@
+import Icon from "@/components/ui/icon";
+import { Lead } from "./adminTypes";
+import { getMissingFields } from "./leadReadinessUtils";
+
+interface LeadReadinessProps {
+  lead: Lead;
+  openRequisites: (l: Lead) => void;
+}
+
+export default function LeadReadiness({ lead, openRequisites }: LeadReadinessProps) {
+  const missing = getMissingFields(lead);
+
+  if (missing.length === 0) {
+    return (
+      <div className="mt-3 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+        <Icon name="CircleCheck" size={14} className="shrink-0" />
+        Все данные заполнены — документы сформируются полностью
+      </div>
+    );
+  }
+
+  const isBlocking =
+    missing.some(m => m.docs.includes("счёт")) || missing.some(m => m.label.startsWith("реквизиты"));
+  const hasRequisiteGaps = missing.some(m => m.inRequisites);
+
+  return (
+    <div
+      className={`mt-3 rounded-lg px-3 py-2.5 border text-xs ${
+        isBlocking
+          ? "bg-amber-50 border-amber-200 text-amber-900"
+          : "bg-slate-50 border-slate-200 text-slate-600"
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        <Icon
+          name={isBlocking ? "TriangleAlert" : "Info"}
+          size={14}
+          className={`shrink-0 mt-0.5 ${isBlocking ? "text-amber-600" : "text-slate-400"}`}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="font-medium">
+            {isBlocking ? "Не хватает данных для документов" : "Документы сформируются не полностью"}
+          </div>
+          <ul className="mt-1.5 space-y-1">
+            {missing.map(m => (
+              <li key={m.label} className="flex flex-wrap items-baseline gap-x-1.5">
+                <span className="text-slate-400">•</span>
+                <span>{m.label}</span>
+                <span className="text-[11px] opacity-70">— нужно для: {m.docs.join(", ")}</span>
+              </li>
+            ))}
+          </ul>
+          {hasRequisiteGaps ? (
+            <button
+              onClick={() => openRequisites(lead)}
+              className="mt-2 inline-flex items-center gap-1 font-medium text-rose-600 hover:text-rose-700 transition"
+            >
+              <Icon name="Pencil" size={12} />
+              Заполнить реквизиты
+            </button>
+          ) : (
+            <div className="mt-2 text-[11px] opacity-70">
+              Эти данные приходят из заявки — уточните их у клиента и внесите при согласовании
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

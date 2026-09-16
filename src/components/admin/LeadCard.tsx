@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import { Lead, Requisites, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
+import LeadReadiness from "./LeadReadiness";
 
 interface LeadCardProps {
   lead: Lead;
@@ -161,7 +162,9 @@ export default function LeadCard({
         </div>
       )}
 
-      <div className="mt-4 flex gap-2">
+      {editingId !== l.id && <LeadReadiness lead={l} openRequisites={openRequisites} />}
+
+      <div className="mt-4 flex flex-wrap gap-2">
         <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition">Позвонить</a>
         <a href="https://t.me/izumrudvlpm" target="_blank" rel="noopener noreferrer" className="text-sm bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600 transition">Telegram</a>
         <button
@@ -174,7 +177,7 @@ export default function LeadCard({
         <button
           onClick={() => generateContract(l.id)}
           disabled={generatingId === l.id || (!l.inn && !l.legalAddress)}
-          title={!l.inn && !l.legalAddress ? "Сначала заполните реквизиты клиента" : ""}
+          title={!l.inn && !l.legalAddress ? "Заполните реквизиты клиента — ИНН или юридический адрес" : ""}
           className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Icon name="FileSignature" size={15} />
@@ -183,7 +186,7 @@ export default function LeadCard({
         <button
           onClick={() => generateInvoice(l.id)}
           disabled={invoiceGeneratingId === l.id || !l.totalPrice}
-          title={!l.totalPrice ? "У заявки не указана стоимость услуг" : ""}
+          title={!l.totalPrice ? "Укажите стоимость размещения — без неё счёт не сформировать" : ""}
           className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Icon name="Receipt" size={15} />
@@ -192,7 +195,7 @@ export default function LeadCard({
         <button
           onClick={() => generateAct(l.id)}
           disabled={actGeneratingId === l.id || !l.totalPrice}
-          title={!l.totalPrice ? "У заявки не указана стоимость услуг" : ""}
+          title={!l.totalPrice ? "Укажите стоимость размещения — без неё акт не сформировать" : ""}
           className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Icon name="ClipboardCheck" size={15} />
