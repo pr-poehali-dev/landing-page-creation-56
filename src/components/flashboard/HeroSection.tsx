@@ -87,7 +87,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
           <div>
             <div className="fb-badge">📍 ТЦ «Изумруд Плаза» · Океанский пр-т, 16а</div>
             <h1>Вашу рекламу увидят до <span className="fb-grad"><CountUp target={40000} />{" "}человек</span> каждый день</h1>
-            <p className="fb-sub">LED-экран 50 м² над входом в ТЦ «Изумруд Плаза» с 06:00 до 23:00. <b>Запуск за 1 день.</b></p>
+            <p className="fb-sub">LED-экран 50 м² над входом в ТЦ «Изумруд Плаза». <b>Запуск за 1 день.</b></p>
             <div className="fb-cta">
               <a className="fb-btn" href="#lead">Разместить рекламу — от 1 625 ₽/день</a>
               <a className="fb-btn fb-ghost" href="#calculator">Рассчитать стоимость</a>
