@@ -66,17 +66,15 @@ const FAQS = [
 export default function CalculatorHowFaq() {
   const [dur, setDur] = useState(10);
   const [days, setDays] = useState(30);
-  const [needVideo, setNeedVideo] = useState(false);
 
   const calc = useMemo(() => {
     const k = dur > 15 ? 1.25 : 1;
     const placement = Math.round(RATE * dur * days * k);
-    const video = needVideo ? 7500 : 0;
     const cpt = placement / ((OTS * days) / 1000);
     const outputs = OUT * days;
     const contacts = Math.round((OTS * days) / 1000) * 1000;
-    return { placement, video, cpt, outputs, contacts, total: placement + video };
-  }, [dur, days, needVideo]);
+    return { placement, cpt, outputs, contacts, total: placement };
+  }, [dur, days]);
 
   return (
     <>
@@ -101,16 +99,11 @@ export default function CalculatorHowFaq() {
               </div>
               <input type="range" min={10} max={90} step={5} value={days} onChange={e => setDays(+e.target.value)} />
               <div className="fb-rl"><span>10 дней</span><span>90 дней</span></div>
-              <label className="fb-chk">
-                <input type="checkbox" checked={needVideo} onChange={e => setNeedVideo(e.target.checked)} />
-                <span>Нужен видеоролик под экран <i>(от 7 500 ₽)</i></span>
-              </label>
             </div>
             <div className="fb-calcR">
               <div className="fb-crk">✦ Ваша кампания</div>
               <div style={{ marginTop: 6 }}>
                 <div className="fb-crow"><span>Размещение, {days} дн. × {dur}″</span><b>{fmt(calc.placement)}</b></div>
-                {needVideo && <div className="fb-crow"><span>Производство ролика</span><b>7 500 ₽</b></div>}
                 <div className="fb-crow"><span>Выходов ролика на экране</span><b>{calc.outputs.toLocaleString("ru-RU")}</b></div>
                 <div className="fb-crow"><span>Потенциальных контактов</span><b>~{calc.contacts.toLocaleString("ru-RU")}</b></div>
                 <div className="fb-crow fb-cpt"><span>Цена 1000 контактов</span><b>~{Math.round(calc.cpt)} ₽</b></div>
