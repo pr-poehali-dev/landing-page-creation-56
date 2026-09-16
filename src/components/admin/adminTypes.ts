@@ -57,6 +57,21 @@ export const EMPTY_REQUISITES: Requisites = {
   signerName: "", signerPosition: "",
 };
 
+export interface DealTerms {
+  totalPrice: string;
+  duration: string;
+  days: string;
+  startDate: string;
+  endDate: string;
+  needVideo: boolean;
+  videoAmount: string;
+}
+
+export const EMPTY_DEAL_TERMS: DealTerms = {
+  totalPrice: "", duration: "", days: "", startDate: "", endDate: "",
+  needVideo: false, videoAmount: "",
+};
+
 export const STATUS_LABELS: Record<string, string> = {
   new: "Новая",
   estimate: "Смета",

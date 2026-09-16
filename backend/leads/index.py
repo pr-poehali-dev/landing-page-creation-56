@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 import psycopg2
 
 
@@ -190,6 +191,52 @@ def handler(event: dict, context) -> dict:
             if key in body:
                 val = str(body.get(key) or '')[:500].replace("'", "''")
                 set_clauses.append(f"{col} = '{val}'" if val else f"{col} = NULL")
+
+        deal_int_fields = {
+            'totalPrice': 'total_price', 'duration': 'duration', 'days': 'days',
+            'placementAmount': 'placement_amount', 'videoAmount': 'video_amount',
+        }
+        for key, col in deal_int_fields.items():
+            if key in body:
+                raw = body.get(key)
+                if raw is None or raw == '':
+                    set_clauses.append(f"{col} = NULL")
+                    continue
+                try:
+                    val = max(int(raw), 0)
+                except (TypeError, ValueError):
+                    cur.close()
+                    conn.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'error': f'Некорректное числовое значение: {key}'}, ensure_ascii=False),
+                        'isBase64Encoded': False
+                    }
+                set_clauses.append(f"{col} = {val}")
+
+        for key, col in {'startDate': 'start_date', 'endDate': 'end_date'}.items():
+            if key in body:
+                raw = body.get(key)
+                if not raw:
+                    set_clauses.append(f"{col} = NULL")
+                    continue
+                val = str(raw)[:10]
+                try:
+                    datetime.strptime(val, '%Y-%m-%d')
+                except ValueError:
+                    cur.close()
+                    conn.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'error': f'Некорректная дата: {key}'}, ensure_ascii=False),
+                        'isBase64Encoded': False
+                    }
+                set_clauses.append(f"{col} = '{val}'")
+
+        if 'needVideo' in body:
+            set_clauses.append(f"need_video = {'TRUE' if body.get('needVideo') else 'FALSE'}")
 
         if 'paidAmount' in body:
             paid_raw = body.get('paidAmount')

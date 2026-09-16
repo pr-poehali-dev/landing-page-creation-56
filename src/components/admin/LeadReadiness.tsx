@@ -5,9 +5,10 @@ import { getMissingFields } from "./leadReadinessUtils";
 interface LeadReadinessProps {
   lead: Lead;
   openRequisites: (l: Lead) => void;
+  openDealTerms: (l: Lead) => void;
 }
 
-export default function LeadReadiness({ lead, openRequisites }: LeadReadinessProps) {
+export default function LeadReadiness({ lead, openRequisites, openDealTerms }: LeadReadinessProps) {
   const missing = getMissingFields(lead);
 
   if (missing.length === 0) {
@@ -22,6 +23,7 @@ export default function LeadReadiness({ lead, openRequisites }: LeadReadinessPro
   const isBlocking =
     missing.some(m => m.docs.includes("счёт")) || missing.some(m => m.label.startsWith("реквизиты"));
   const hasRequisiteGaps = missing.some(m => m.inRequisites);
+  const hasTermGaps = missing.some(m => !m.inRequisites);
 
   return (
     <div
@@ -50,19 +52,26 @@ export default function LeadReadiness({ lead, openRequisites }: LeadReadinessPro
               </li>
             ))}
           </ul>
-          {hasRequisiteGaps ? (
-            <button
-              onClick={() => openRequisites(lead)}
-              className="mt-2 inline-flex items-center gap-1 font-medium text-rose-600 hover:text-rose-700 transition"
-            >
-              <Icon name="Pencil" size={12} />
-              Заполнить реквизиты
-            </button>
-          ) : (
-            <div className="mt-2 text-[11px] opacity-70">
-              Эти данные приходят из заявки — уточните их у клиента и внесите при согласовании
-            </div>
-          )}
+          <div className="mt-2 flex flex-wrap gap-3">
+            {hasRequisiteGaps && (
+              <button
+                onClick={() => openRequisites(lead)}
+                className="inline-flex items-center gap-1 font-medium text-rose-600 hover:text-rose-700 transition"
+              >
+                <Icon name="Pencil" size={12} />
+                Заполнить реквизиты
+              </button>
+            )}
+            {hasTermGaps && (
+              <button
+                onClick={() => openDealTerms(lead)}
+                className="inline-flex items-center gap-1 font-medium text-rose-600 hover:text-rose-700 transition"
+              >
+                <Icon name="CalendarRange" size={12} />
+                Указать условия размещения
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

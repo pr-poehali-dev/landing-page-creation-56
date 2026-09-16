@@ -1,6 +1,7 @@
 import Icon from "@/components/ui/icon";
-import { Lead, Requisites, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
+import { Lead, Requisites, DealTerms, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 import LeadReadiness from "./LeadReadiness";
+import DealTermsForm from "./DealTermsForm";
 
 interface LeadCardProps {
   lead: Lead;
@@ -31,6 +32,13 @@ interface LeadCardProps {
   setReqForm: (r: Requisites) => void;
   saveRequisites: (id: number) => void;
   savingReq: boolean;
+  editingTermsId: number | null;
+  setEditingTermsId: (id: number | null) => void;
+  openDealTerms: (l: Lead) => void;
+  termsForm: DealTerms;
+  setTermsForm: (f: DealTerms) => void;
+  saveDealTerms: (id: number) => void;
+  savingTerms: boolean;
 }
 
 export default function LeadCard({
@@ -62,6 +70,13 @@ export default function LeadCard({
   setReqForm,
   saveRequisites,
   savingReq,
+  editingTermsId,
+  setEditingTermsId,
+  openDealTerms,
+  termsForm,
+  setTermsForm,
+  saveDealTerms,
+  savingTerms,
 }: LeadCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
@@ -162,7 +177,9 @@ export default function LeadCard({
         </div>
       )}
 
-      {editingId !== l.id && <LeadReadiness lead={l} openRequisites={openRequisites} />}
+      {editingId !== l.id && editingTermsId !== l.id && (
+        <LeadReadiness lead={l} openRequisites={openRequisites} openDealTerms={openDealTerms} />
+      )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition">Позвонить</a>
@@ -173,6 +190,13 @@ export default function LeadCard({
         >
           <Icon name="FileText" size={15} />
           {editingId === l.id ? "Свернуть" : l.inn ? "Реквизиты" : "Добавить реквизиты"}
+        </button>
+        <button
+          onClick={() => (editingTermsId === l.id ? setEditingTermsId(null) : openDealTerms(l))}
+          className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5"
+        >
+          <Icon name="CalendarRange" size={15} />
+          {editingTermsId === l.id ? "Свернуть" : l.totalPrice ? "Условия" : "Указать условия"}
         </button>
         <button
           onClick={() => generateContract(l.id)}
@@ -234,6 +258,16 @@ export default function LeadCard({
             ))}
           </div>
         </div>
+      )}
+
+      {editingTermsId === l.id && (
+        <DealTermsForm
+          form={termsForm}
+          setForm={setTermsForm}
+          onSave={() => saveDealTerms(l.id)}
+          onCancel={() => setEditingTermsId(null)}
+          saving={savingTerms}
+        />
       )}
 
       {editingId === l.id && (

@@ -9,6 +9,8 @@ import {
   LeadDocument,
   Requisites,
   EMPTY_REQUISITES,
+  DealTerms,
+  EMPTY_DEAL_TERMS,
   STATUS_ORDER,
   ACTIVE_STATUSES,
 } from "@/components/admin/adminTypes";
@@ -33,6 +35,9 @@ const Admin = () => {
   const [invoiceError, setInvoiceError] = useState<Record<number, string>>({});
   const [actGeneratingId, setActGeneratingId] = useState<number | null>(null);
   const [actError, setActError] = useState<Record<number, string>>({});
+  const [editingTermsId, setEditingTermsId] = useState<number | null>(null);
+  const [termsForm, setTermsForm] = useState<DealTerms>(EMPTY_DEAL_TERMS);
+  const [savingTerms, setSavingTerms] = useState(false);
   const [editingPaidId, setEditingPaidId] = useState<number | null>(null);
   const [paidInput, setPaidInput] = useState("");
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
@@ -101,6 +106,78 @@ const Admin = () => {
       signerName: l.signerName || "",
       signerPosition: l.signerPosition || "",
     });
+  }
+
+  function openDealTerms(l: Lead) {
+    setEditingId(null);
+    setEditingTermsId(l.id);
+    setTermsForm({
+      totalPrice: l.totalPrice != null ? String(l.totalPrice) : "",
+      duration: l.duration != null ? String(l.duration) : "",
+      days: l.days != null ? String(l.days) : "",
+      startDate: l.startDate ? l.startDate.slice(0, 10) : "",
+      endDate: l.endDate ? l.endDate.slice(0, 10) : "",
+      needVideo: l.needVideo,
+      videoAmount: l.videoAmount != null ? String(l.videoAmount) : "",
+    });
+  }
+
+  async function saveDealTerms(id: number) {
+    if (termsForm.startDate && termsForm.endDate && termsForm.endDate < termsForm.startDate) {
+      setError("Дата окончания раньше даты начала");
+      return;
+    }
+    setSavingTerms(true);
+    setError("");
+    try {
+      const total = termsForm.totalPrice === "" ? null : Number(termsForm.totalPrice);
+      const video = !termsForm.needVideo || termsForm.videoAmount === "" ? null : Number(termsForm.videoAmount);
+      const placement = total != null ? Math.max(total - (video || 0), 0) : null;
+
+      const payload = {
+        id,
+        totalPrice: total,
+        duration: termsForm.duration === "" ? null : Number(termsForm.duration),
+        days: termsForm.days === "" ? null : Number(termsForm.days),
+        startDate: termsForm.startDate || null,
+        endDate: termsForm.endDate || null,
+        needVideo: termsForm.needVideo,
+        videoAmount: video,
+        placementAmount: placement,
+      };
+
+      const res = await fetch(func2url.leads, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "fail");
+
+      setLeads(prev =>
+        prev.map(l =>
+          l.id === id
+            ? {
+                ...l,
+                totalPrice: payload.totalPrice,
+                duration: payload.duration,
+                days: payload.days,
+                startDate: payload.startDate,
+                endDate: payload.endDate,
+                needVideo: payload.needVideo,
+                videoAmount: payload.videoAmount,
+                placementAmount: payload.placementAmount,
+                status: data.status || l.status,
+              }
+            : l
+        )
+      );
+      setEditingTermsId(null);
+    } catch (e) {
+      setError(e instanceof Error && e.message !== "fail" ? e.message : "Не удалось сохранить условия");
+    } finally {
+      setSavingTerms(false);
+    }
   }
 
   async function saveRequisites(id: number) {
@@ -345,6 +422,13 @@ const Admin = () => {
                 setReqForm={setReqForm}
                 saveRequisites={saveRequisites}
                 savingReq={savingReq}
+                editingTermsId={editingTermsId}
+                setEditingTermsId={setEditingTermsId}
+                openDealTerms={openDealTerms}
+                termsForm={termsForm}
+                setTermsForm={setTermsForm}
+                saveDealTerms={saveDealTerms}
+                savingTerms={savingTerms}
               />
             ))}
           </div>
