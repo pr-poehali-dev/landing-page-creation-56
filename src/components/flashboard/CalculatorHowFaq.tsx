@@ -33,7 +33,7 @@ const STEPS = [
   {
     icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 21h8m-4-4v4" /><path d="M10 9l4 2.5-4 2.5z" fill="currentColor" stroke="none" /></svg>,
     title: "Запуск на экране",
-    desc: "Ролик встаёт в блок: выход каждые 5 минут, 204 раза в день, с 06:00 до 23:00. Пришлём фото первого выхода.",
+    desc: "Ролик встаёт в блок: выход каждые 5 минут, 204 раза в день, с 06:00 до 23:00.",
     time: "в день обращения",
   },
   {
