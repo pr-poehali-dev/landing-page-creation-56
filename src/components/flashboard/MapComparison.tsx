@@ -30,7 +30,7 @@ export default function MapComparison() {
             <div className="fb-mapbox">
               <iframe
                 title="Карта расположения экрана Флэшборд"
-                src="https://yandex.ru/map-widget/v1/?text=%D0%92%D0%BB%D0%B0%D0%B4%D0%B8%D0%B2%D0%BE%D1%81%D1%82%D0%BE%D0%BA%2C%20%D0%9E%D0%BA%D0%B5%D0%B0%D0%BD%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82%2C%2016%D0%B0&z=17"
+                src="https://yandex.ru/map-widget/v1/?ll=131.887300%2C43.118750&z=17&pt=131.887300,43.118750,pm2rdm"
                 width="100%"
                 height="100%"
                 frameBorder="0"
