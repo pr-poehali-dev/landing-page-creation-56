@@ -101,7 +101,7 @@ export default function AudiencePricing() {
           <div className="fb-plans">
             {PLANS.map((p, i) => (
               <div className={`fb-plan${p.hot ? " fb-hot" : ""}`} key={i}>
-                {p.hot && <div className="fb-hotbadge">Выбирают чаще всего</div>}
+                <div className={`fb-hotbadge${p.hot ? "" : " fb-hotbadge-ghost"}`}>{p.hot ? "Выбирают чаще всего" : ""}</div>
                 <div className="fb-nm" style={p.hot ? { color: "#fb7185" } : undefined}>{p.name}</div>
                 <div className="fb-tm">{p.duration}</div>
                 <div className="fb-pr"><b>{p.price}</b><span>в день</span></div>

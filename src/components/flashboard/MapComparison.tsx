@@ -1,18 +1,33 @@
-const ADVANTAGES = [
+const COMPARE_ROWS = [
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" /></svg>,
-    title: "Быстрая замена ролика",
-    desc: "Бесплатно, без затрат на перепечатку макета",
+    label: "Запуск кампании",
+    screen: "1 день от заявки",
+    banner: "5–10 дней на печать и монтаж",
   },
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>,
-    title: "Запуск кампании",
-    desc: "1 день от заявки до первого выхода",
+    label: "Замена макета",
+    screen: "Бесплатно, в тот же день",
+    banner: "Новая печать и оплата монтажа",
   },
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 10h18M8 2v4m8-4v4" /></svg>,
-    title: "Любой срок размещения",
-    desc: "От 5 дней — гибко под вашу задачу",
+    label: "Минимальный срок",
+    screen: "От 5 дней",
+    banner: "Обычно от 1 месяца",
+  },
+  {
+    label: "Видно в тёмное время",
+    screen: "Да, собственное свечение",
+    banner: "Только при внешней подсветке",
+  },
+  {
+    label: "Отчётность",
+    screen: "Фото- и видеофиксация",
+    banner: "Как правило, только фото",
+  },
+  {
+    label: "Формат подачи",
+    screen: "Видео и анимация",
+    banner: "Статичная картинка",
   },
 ];
 
@@ -78,12 +93,25 @@ export default function MapComparison() {
             <div className="fb-kicker">Преимущества</div>
             <h2>Почему медиафасад выгоднее других видов наружной рекламы</h2>
           </div>
-          <div className="fb-cards fb-cards-3" style={{ marginTop: 32 }}>
-            {ADVANTAGES.map((a, i) => (
-              <div className="fb-card" key={i}>
-                <div className="fb-icon">{a.icon}</div>
-                <h3>{a.title}</h3>
-                <p>{a.desc}</p>
+          <div className="fb-cmp">
+            <div className="fb-cmp-head">
+              <div />
+              <div className="fb-cmp-us">
+                <span className="fb-cmp-badge">Медиафасад «Флэшборд»</span>
+              </div>
+              <div className="fb-cmp-them">Баннер или щит</div>
+            </div>
+            {COMPARE_ROWS.map((r) => (
+              <div className="fb-cmp-row" key={r.label}>
+                <div className="fb-cmp-lbl">{r.label}</div>
+                <div className="fb-cmp-us">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                  <span>{r.screen}</span>
+                </div>
+                <div className="fb-cmp-them">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                  <span>{r.banner}</span>
+                </div>
               </div>
             ))}
           </div>
