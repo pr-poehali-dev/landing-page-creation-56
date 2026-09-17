@@ -6,6 +6,7 @@ import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
 import BackupPanel from "@/components/admin/BackupPanel";
 import HelpPanel from "@/components/admin/HelpPanel";
+import NewLeadForm from "@/components/admin/NewLeadForm";
 import {
   Lead,
   LeadDocument,
@@ -391,6 +392,7 @@ const Admin = () => {
           onLogout={handleLogout}
         />
 
+        {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && <HelpPanel />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 

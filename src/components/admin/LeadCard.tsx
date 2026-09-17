@@ -90,6 +90,12 @@ export default function LeadCard({
         <div>
           <div className="font-semibold text-slate-900 text-lg">{l.name}</div>
           {l.company && <div className="text-slate-500 text-sm">{l.company}</div>}
+          {l.source === "manual" && (
+            <div className="inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-100 rounded-full px-2 py-0.5 mt-1">
+              <Icon name="PhoneCall" size={10} />
+              Добавлена вручную
+            </div>
+          )}
           <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-rose-600 font-medium">{l.phone}</a>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
