@@ -21,6 +21,8 @@ import {
   ACTIVE_STATUSES,
 } from "@/components/admin/adminTypes";
 
+const PAGE_SIZE = 20;
+
 const Admin = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +51,12 @@ const Admin = () => {
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, statusFilter, sortBy]);
 
   const editingLead = leads.find(l => l.id === editingId) || null;
   const termsLead = leads.find(l => l.id === editingTermsId) || null;
@@ -244,6 +252,9 @@ const Admin = () => {
     }
     return sorted;
   }, [leads, statusFilter, sortBy, search]);
+
+  const visibleLeads = filteredLeads.slice(0, visibleCount);
+  const restCount = filteredLeads.length - visibleLeads.length;
 
   function formatDate(iso: string | null) {
     if (!iso) return "—";
@@ -449,7 +460,7 @@ const Admin = () => {
 
         {!loading && filteredLeads.length > 0 && (
           <div className="grid gap-3">
-            {filteredLeads.map(l => (
+            {visibleLeads.map(l => (
               <LeadCard
                 key={l.id}
                 lead={l}
@@ -480,6 +491,21 @@ const Admin = () => {
                 deleteLead={deleteLead}
               />
             ))}
+          </div>
+        )}
+
+        {!loading && restCount > 0 && (
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <button
+              onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+              className="w-full sm:w-auto bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl px-6 py-3 flex items-center justify-center gap-2 transition shadow-sm"
+            >
+              <Icon name="ChevronDown" size={16} />
+              Показать ещё {Math.min(restCount, PAGE_SIZE)}
+            </button>
+            <div className="text-xs text-slate-400">
+              Показано {visibleLeads.length} из {filteredLeads.length}
+            </div>
           </div>
         )}
       </div>
