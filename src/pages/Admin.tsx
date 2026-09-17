@@ -45,6 +45,7 @@ const Admin = () => {
   const [paidInput, setPaidInput] = useState("");
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (!adminKey) {
@@ -215,7 +216,20 @@ const Admin = () => {
   );
 
   const filteredLeads = useMemo(() => {
-    const base = statusFilter === "all" ? leads : leads.filter(l => l.status === statusFilter);
+    const byStatus = statusFilter === "all" ? leads : leads.filter(l => l.status === statusFilter);
+
+    const norm = (s: string) => s.toLowerCase().replace(/ё/g, "е");
+    const q = norm(search.trim());
+    const digits = q.replace(/\D/g, "");
+    const base = !q
+      ? byStatus
+      : byStatus.filter(l => {
+          const haystack = norm([l.name, l.company, l.email].filter(Boolean).join(" "));
+          if (haystack.includes(q)) return true;
+          if (digits.length >= 3 && l.phone.replace(/\D/g, "").includes(digits)) return true;
+          return false;
+        });
+
     const sorted = [...base];
     if (sortBy === "price") {
       sorted.sort((a, b) => (b.totalPrice || 0) - (a.totalPrice || 0));
@@ -223,7 +237,7 @@ const Admin = () => {
       sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
     return sorted;
-  }, [leads, statusFilter, sortBy]);
+  }, [leads, statusFilter, sortBy, search]);
 
   function formatDate(iso: string | null) {
     if (!iso) return "—";
@@ -391,6 +405,9 @@ const Admin = () => {
           sortBy={sortBy}
           setSortBy={setSortBy}
           onLogout={handleLogout}
+          search={search}
+          setSearch={setSearch}
+          foundCount={filteredLeads.length}
         />
 
         {!loading && <HelpPanel />}
@@ -409,8 +426,18 @@ const Admin = () => {
 
         {!loading && leads.length > 0 && filteredLeads.length === 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <Icon name="Filter" size={40} className="mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Нет заявок с таким статусом</p>
+            <Icon name={search ? "SearchX" : "Filter"} size={40} className="mx-auto text-slate-300 mb-3" />
+            <p className="text-slate-500">
+              {search ? `По запросу «${search}» ничего не найдено` : "Нет заявок с таким статусом"}
+            </p>
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="mt-3 text-sm text-rose-600 hover:underline"
+              >
+                Сбросить поиск
+              </button>
+            )}
           </div>
         )}
 
