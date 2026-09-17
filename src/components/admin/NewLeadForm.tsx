@@ -18,6 +18,7 @@ const EMPTY = {
   totalPrice: "",
   duration: "",
   days: "",
+  startDate: "",
   needVideo: false,
 };
 
@@ -62,6 +63,7 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
           totalPrice: form.totalPrice ? Number(form.totalPrice) : null,
           duration: form.duration ? Number(form.duration) : null,
           days: form.days ? Number(form.days) : null,
+          startDate: form.startDate || null,
           needVideo: form.needVideo,
           source: "manual",
         }),
@@ -76,6 +78,7 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
         comment: form.comment.trim() || null,
         duration: form.duration ? Number(form.duration) : null,
         days: form.days ? Number(form.days) : null,
+        startDate: form.startDate || null,
         needVideo: form.needVideo,
         totalPrice: form.totalPrice ? Number(form.totalPrice) : null,
         source: "manual",
@@ -83,7 +86,6 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
         createdAt: new Date().toISOString(),
         company: form.company.trim() || null,
         email: form.email.trim() || null,
-        startDate: null,
         endDate: null,
         placementAmount: null,
         videoAmount: null,
@@ -211,6 +213,15 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
                   className={inputClass}
                 />
               </div>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Старт показов</label>
+              <input
+                type="date"
+                value={form.startDate}
+                onChange={e => set("startDate", e.target.value)}
+                className={inputClass}
+              />
             </div>
             <div className="sm:col-span-2">
               <label className="text-xs text-slate-500 mb-1 block">Комментарий</label>

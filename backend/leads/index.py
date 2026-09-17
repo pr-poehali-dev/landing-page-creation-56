@@ -74,10 +74,19 @@ def handler(event: dict, context) -> dict:
         email_esc = email.replace("'", "''")
         email_val = f"'{email_esc}'" if email else 'NULL'
 
+        start_raw = str(body.get('startDate') or '')[:10]
+        start_val = 'NULL'
+        if start_raw:
+            try:
+                datetime.strptime(start_raw, '%Y-%m-%d')
+                start_val = f"'{start_raw}'"
+            except ValueError:
+                start_val = 'NULL'
+
         query = (
-            f"INSERT INTO leads (name, phone, comment, duration, days, need_video, total_price, source, company, email) "
+            f"INSERT INTO leads (name, phone, comment, duration, days, need_video, total_price, source, company, email, start_date) "
             f"VALUES ('{name_esc}', '{phone_esc}', '{comment_esc}', {dur_val}, {days_val}, "
-            f"{'TRUE' if need_video else 'FALSE'}, {price_val}, '{source_esc}', {company_val}, {email_val}) RETURNING id"
+            f"{'TRUE' if need_video else 'FALSE'}, {price_val}, '{source_esc}', {company_val}, {email_val}, {start_val}) RETURNING id"
         )
         cur.execute(query)
         lead_id = cur.fetchone()[0]

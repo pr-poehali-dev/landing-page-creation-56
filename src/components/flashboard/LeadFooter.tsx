@@ -17,9 +17,12 @@ function formatPhone(value: string) {
 }
 
 export default function LeadFooter() {
+  const today = new Date().toISOString().slice(0, 10);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [comment, setComment] = useState("");
+  const [duration, setDuration] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -33,7 +36,14 @@ export default function LeadFooter() {
     setError("");
     setSending(true);
 
-    const payload = { name, phone, comment, source: "form" };
+    const payload = {
+      name,
+      phone,
+      comment,
+      duration: duration ? Number(duration) : null,
+      startDate: startDate || null,
+      source: "form",
+    };
     try {
       const res = await fetch(func2url.leads, {
         method: "POST",
@@ -43,12 +53,17 @@ export default function LeadFooter() {
       if (!res.ok) throw new Error("fail");
       setSent(true);
       const text = encodeURIComponent(
-        `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}\nКомментарий: ${comment || "—"}`
+        `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}` +
+          `\nХронометраж: ${duration ? duration + " сек" : "—"}` +
+          `\nСтарт: ${startDate ? new Date(startDate).toLocaleDateString("ru-RU") : "—"}` +
+          `\nКомментарий: ${comment || "—"}`
       );
       window.open(`https://t.me/izumrudvlpm?text=${text}`, "_blank");
       setName("");
       setPhone("");
       setComment("");
+      setDuration("");
+      setStartDate("");
     } catch {
       setError("Не удалось отправить. Позвоните нам: +7 908 992 50 20");
     } finally {
@@ -110,6 +125,28 @@ export default function LeadFooter() {
                       onChange={e => setPhone(formatPhone(e.target.value))}
                       onFocus={() => { if (!phone) setPhone("+7 ("); }}
                     />
+                  </div>
+                  <div className="fb-two">
+                    <div className="fb-fld">
+                      <label>Хронометраж <i>(необяз.)</i></label>
+                      <select value={duration} onChange={e => setDuration(e.target.value)}>
+                        <option value="">Не знаю</option>
+                        <option value="5">5 секунд</option>
+                        <option value="10">10 секунд</option>
+                        <option value="15">15 секунд</option>
+                        <option value="20">20 секунд</option>
+                        <option value="30">30 секунд</option>
+                      </select>
+                    </div>
+                    <div className="fb-fld">
+                      <label>Старт показов <i>(необяз.)</i></label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        min={today}
+                        onChange={e => setStartDate(e.target.value)}
+                      />
+                    </div>
                   </div>
                   <div className="fb-fld">
                     <label>Что рекламируем? <i>(необязательно)</i></label>
