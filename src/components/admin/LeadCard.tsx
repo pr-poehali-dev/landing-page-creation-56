@@ -1,7 +1,6 @@
 import Icon from "@/components/ui/icon";
-import { Lead, Requisites, DealTerms, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
+import { Lead, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 import LeadReadiness from "./LeadReadiness";
-import DealTermsForm from "./DealTermsForm";
 import SendDocButton from "./SendDocButton";
 
 interface LeadCardProps {
@@ -16,9 +15,7 @@ interface LeadCardProps {
   savePaidAmount: (id: number) => void;
   savingPaid: number | null;
   setEditingPaidId: (id: number | null) => void;
-  editingId: number | null;
   openRequisites: (l: Lead) => void;
-  setEditingId: (id: number | null) => void;
   generateContract: (id: number) => void;
   generatingId: number | null;
   generateInvoice: (id: number) => void;
@@ -29,17 +26,7 @@ interface LeadCardProps {
   invoiceError: Record<number, string>;
   actError: Record<number, string>;
   deleteDocument: (leadId: number, docId: number | null) => void;
-  reqForm: Requisites;
-  setReqForm: (r: Requisites) => void;
-  saveRequisites: (id: number) => void;
-  savingReq: boolean;
-  editingTermsId: number | null;
-  setEditingTermsId: (id: number | null) => void;
   openDealTerms: (l: Lead) => void;
-  termsForm: DealTerms;
-  setTermsForm: (f: DealTerms) => void;
-  saveDealTerms: (id: number) => void;
-  savingTerms: boolean;
   confirmDeleteId: number | null;
   setConfirmDeleteId: (id: number | null) => void;
   deleteLead: (id: number) => void;
@@ -57,9 +44,7 @@ export default function LeadCard({
   savePaidAmount,
   savingPaid,
   setEditingPaidId,
-  editingId,
   openRequisites,
-  setEditingId,
   generateContract,
   generatingId,
   generateInvoice,
@@ -70,17 +55,7 @@ export default function LeadCard({
   invoiceError,
   actError,
   deleteDocument,
-  reqForm,
-  setReqForm,
-  saveRequisites,
-  savingReq,
-  editingTermsId,
-  setEditingTermsId,
   openDealTerms,
-  termsForm,
-  setTermsForm,
-  saveDealTerms,
-  savingTerms,
   confirmDeleteId,
   setConfirmDeleteId,
   deleteLead,
@@ -213,7 +188,7 @@ export default function LeadCard({
         </div>
       )}
 
-      {(l.inn || l.legalAddress || l.bankAccount) && editingId !== l.id && (
+      {(l.inn || l.legalAddress || l.bankAccount) && (
         <div className="mt-3 bg-slate-50 rounded-lg p-3 text-xs text-slate-600 space-y-0.5">
           {l.inn && <div>ИНН {l.inn}{l.kpp ? ` · КПП ${l.kpp}` : ""}{l.ogrn ? ` · ОГРН ${l.ogrn}` : ""}</div>}
           {l.legalAddress && <div>{l.legalAddress}</div>}
@@ -221,26 +196,24 @@ export default function LeadCard({
         </div>
       )}
 
-      {editingId !== l.id && editingTermsId !== l.id && (
-        <LeadReadiness lead={l} openRequisites={openRequisites} openDealTerms={openDealTerms} />
-      )}
+      <LeadReadiness lead={l} openRequisites={openRequisites} openDealTerms={openDealTerms} />
 
       <div className="mt-4 flex flex-wrap gap-2">
         <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition">Позвонить</a>
         <a href="https://t.me/izumrudvlpm" target="_blank" rel="noopener noreferrer" className="text-sm bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600 transition">Telegram</a>
         <button
-          onClick={() => (editingId === l.id ? setEditingId(null) : openRequisites(l))}
+          onClick={() => openRequisites(l)}
           className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5"
         >
           <Icon name="FileText" size={15} />
-          {editingId === l.id ? "Свернуть" : l.inn ? "Реквизиты" : "Добавить реквизиты"}
+          {l.inn ? "Реквизиты" : "Добавить реквизиты"}
         </button>
         <button
-          onClick={() => (editingTermsId === l.id ? setEditingTermsId(null) : openDealTerms(l))}
+          onClick={() => openDealTerms(l)}
           className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5"
         >
           <Icon name="CalendarRange" size={15} />
-          {editingTermsId === l.id ? "Свернуть" : l.totalPrice ? "Условия" : "Указать условия"}
+          {l.totalPrice ? "Условия" : "Указать условия"}
         </button>
         <button
           onClick={() => generateContract(l.id)}
@@ -305,78 +278,6 @@ export default function LeadCard({
         </div>
       )}
 
-      {editingTermsId === l.id && (
-        <DealTermsForm
-          form={termsForm}
-          setForm={setTermsForm}
-          onSave={() => saveDealTerms(l.id)}
-          onCancel={() => setEditingTermsId(null)}
-          saving={savingTerms}
-        />
-      )}
-
-      {editingId === l.id && (
-        <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="sm:col-span-2">
-            <label className="text-xs font-medium text-slate-500 block mb-1">Организация / ИП</label>
-            <input value={reqForm.company} onChange={e => setReqForm({ ...reqForm, company: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="ООО «Компания»" />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="text-xs font-medium text-slate-500 block mb-1">Email для отправки документов</label>
-            <input type="email" value={reqForm.email} onChange={e => setReqForm({ ...reqForm, email: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="client@company.ru" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-slate-500 block mb-1">ИНН</label>
-            <input value={reqForm.inn} onChange={e => setReqForm({ ...reqForm, inn: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-slate-500 block mb-1">КПП</label>
-            <input value={reqForm.kpp} onChange={e => setReqForm({ ...reqForm, kpp: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="text-xs font-medium text-slate-500 block mb-1">ОГРН / ОГРНИП</label>
-            <input value={reqForm.ogrn} onChange={e => setReqForm({ ...reqForm, ogrn: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="text-xs font-medium text-slate-500 block mb-1">Юридический адрес</label>
-            <input value={reqForm.legalAddress} onChange={e => setReqForm({ ...reqForm, legalAddress: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="text-xs font-medium text-slate-500 block mb-1">Банк</label>
-            <input value={reqForm.bankName} onChange={e => setReqForm({ ...reqForm, bankName: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-slate-500 block mb-1">Р/с</label>
-            <input value={reqForm.bankAccount} onChange={e => setReqForm({ ...reqForm, bankAccount: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-slate-500 block mb-1">БИК</label>
-            <input value={reqForm.bankBik} onChange={e => setReqForm({ ...reqForm, bankBik: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="text-xs font-medium text-slate-500 block mb-1">Корр. счёт</label>
-            <input value={reqForm.bankCorrAccount} onChange={e => setReqForm({ ...reqForm, bankCorrAccount: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-slate-500 block mb-1">ФИО подписанта</label>
-            <input value={reqForm.signerName} onChange={e => setReqForm({ ...reqForm, signerName: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="Иванов Иван Иванович" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-slate-500 block mb-1">Должность</label>
-            <input value={reqForm.signerPosition} onChange={e => setReqForm({ ...reqForm, signerPosition: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="Директор" />
-          </div>
-          <div className="sm:col-span-2 flex gap-2 mt-1">
-            <button
-              onClick={() => saveRequisites(l.id)}
-              disabled={savingReq}
-              className="bg-rose-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-rose-700 transition disabled:opacity-50"
-            >
-              {savingReq ? "Сохраняем…" : "Сохранить реквизиты"}
-            </button>
-            <button onClick={() => setEditingId(null)} className="text-sm text-slate-500 hover:text-slate-700 px-2">Отмена</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

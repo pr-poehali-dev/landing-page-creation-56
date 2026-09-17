@@ -7,6 +7,9 @@ import LeadCard from "@/components/admin/LeadCard";
 import BackupPanel from "@/components/admin/BackupPanel";
 import HelpPanel from "@/components/admin/HelpPanel";
 import NewLeadForm from "@/components/admin/NewLeadForm";
+import AdminModal from "@/components/admin/AdminModal";
+import RequisitesForm from "@/components/admin/RequisitesForm";
+import DealTermsForm from "@/components/admin/DealTermsForm";
 import {
   Lead,
   LeadDocument,
@@ -46,6 +49,9 @@ const Admin = () => {
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+
+  const editingLead = leads.find(l => l.id === editingId) || null;
+  const termsLead = leads.find(l => l.id === editingTermsId) || null;
 
   useEffect(() => {
     if (!adminKey) {
@@ -457,9 +463,7 @@ const Admin = () => {
                 savePaidAmount={savePaidAmount}
                 savingPaid={savingPaid}
                 setEditingPaidId={setEditingPaidId}
-                editingId={editingId}
                 openRequisites={openRequisites}
-                setEditingId={setEditingId}
                 generateContract={generateContract}
                 generatingId={generatingId}
                 generateInvoice={generateInvoice}
@@ -470,17 +474,7 @@ const Admin = () => {
                 invoiceError={invoiceError}
                 actError={actError}
                 deleteDocument={deleteDocument}
-                reqForm={reqForm}
-                setReqForm={setReqForm}
-                saveRequisites={saveRequisites}
-                savingReq={savingReq}
-                editingTermsId={editingTermsId}
-                setEditingTermsId={setEditingTermsId}
                 openDealTerms={openDealTerms}
-                termsForm={termsForm}
-                setTermsForm={setTermsForm}
-                saveDealTerms={saveDealTerms}
-                savingTerms={savingTerms}
                 confirmDeleteId={confirmDeleteId}
                 setConfirmDeleteId={setConfirmDeleteId}
                 deleteLead={deleteLead}
@@ -489,6 +483,38 @@ const Admin = () => {
           </div>
         )}
       </div>
+
+      <AdminModal
+        open={editingId !== null}
+        title={editingLead?.inn ? "Реквизиты клиента" : "Добавить реквизиты"}
+        subtitle={editingLead ? editingLead.company || editingLead.name : undefined}
+        icon="FileText"
+        onClose={() => setEditingId(null)}
+      >
+        <RequisitesForm
+          form={reqForm}
+          setForm={setReqForm}
+          onSave={() => editingId !== null && saveRequisites(editingId)}
+          onCancel={() => setEditingId(null)}
+          saving={savingReq}
+        />
+      </AdminModal>
+
+      <AdminModal
+        open={editingTermsId !== null}
+        title="Условия размещения"
+        subtitle={termsLead ? termsLead.company || termsLead.name : undefined}
+        icon="CalendarRange"
+        onClose={() => setEditingTermsId(null)}
+      >
+        <DealTermsForm
+          form={termsForm}
+          setForm={setTermsForm}
+          onSave={() => editingTermsId !== null && saveDealTerms(editingTermsId)}
+          onCancel={() => setEditingTermsId(null)}
+          saving={savingTerms}
+        />
+      </AdminModal>
     </div>
   );
 };

@@ -17,10 +17,7 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving 
   const placement = Math.max(total - (form.needVideo ? video : 0), 0);
 
   return (
-    <div className="mt-4 pt-4 border-t border-slate-100">
-      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-        Условия размещения
-      </div>
+    <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-medium text-slate-500 block mb-1">Стоимость, ₽</label>
