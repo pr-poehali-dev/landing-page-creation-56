@@ -6,6 +6,7 @@ import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
 import BackupPanel from "@/components/admin/BackupPanel";
 import DocumentsPanel from "@/components/admin/DocumentsPanel";
+import HelpPanel from "@/components/admin/HelpPanel";
 import {
   Lead,
   LeadDocument,
@@ -391,6 +392,7 @@ const Admin = () => {
           onLogout={handleLogout}
         />
 
+        {!loading && <HelpPanel />}
         {!loading && leads.length > 0 && <DocumentsPanel leads={leads} formatDate={formatDate} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
