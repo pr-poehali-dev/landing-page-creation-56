@@ -5,6 +5,7 @@ import AdminLogin from "@/components/admin/AdminLogin";
 import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
 import BackupPanel from "@/components/admin/BackupPanel";
+import DocumentsPanel from "@/components/admin/DocumentsPanel";
 import {
   Lead,
   LeadDocument,
@@ -390,6 +391,7 @@ const Admin = () => {
           onLogout={handleLogout}
         />
 
+        {!loading && leads.length > 0 && <DocumentsPanel leads={leads} formatDate={formatDate} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
         {loading && <div className="text-slate-500">Загружаем…</div>}
