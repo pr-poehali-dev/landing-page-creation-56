@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import AdminLogin from "@/components/admin/AdminLogin";
 import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
+import BackupPanel from "@/components/admin/BackupPanel";
 import {
   Lead,
   LeadDocument,
@@ -371,6 +372,8 @@ const Admin = () => {
           setSortBy={setSortBy}
           onLogout={handleLogout}
         />
+
+        {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
         {loading && <div className="text-slate-500">Загружаем…</div>}
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-4">{error}</div>}

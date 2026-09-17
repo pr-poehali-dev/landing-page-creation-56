@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Запрос без пароля отклоняется",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 403,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Выгрузка без пароля отклоняется",
+      "method": "POST",
+      "path": "/",
+      "expectedStatus": 403,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
