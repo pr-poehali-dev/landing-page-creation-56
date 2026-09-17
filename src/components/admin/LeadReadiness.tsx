@@ -1,6 +1,6 @@
 import Icon from "@/components/ui/icon";
 import { Lead } from "./adminTypes";
-import { getMissingFields } from "./leadReadinessUtils";
+import { getMissingFields, getSuspiciousFields } from "./leadReadinessUtils";
 
 interface LeadReadinessProps {
   lead: Lead;
@@ -10,13 +10,48 @@ interface LeadReadinessProps {
 
 export default function LeadReadiness({ lead, openRequisites, openDealTerms }: LeadReadinessProps) {
   const missing = getMissingFields(lead);
+  const suspicious = getSuspiciousFields(lead);
+
+  const suspiciousBlock = suspicious.length > 0 && (
+    <div className="mt-3 rounded-lg px-3 py-2.5 border text-xs bg-orange-50 border-orange-200 text-orange-900">
+      <div className="flex items-start gap-2">
+        <Icon name="CircleAlert" size={14} className="shrink-0 mt-0.5 text-orange-600" />
+        <div className="min-w-0 flex-1">
+          <div className="font-medium">Проверьте данные — возможна опечатка</div>
+          <ul className="mt-1.5 space-y-1">
+            {suspicious.map(s => (
+              <li key={s.label} className="flex flex-wrap items-baseline gap-x-1.5">
+                <span className="text-orange-400">•</span>
+                <span className="font-medium">{s.label}:</span>
+                <span className="opacity-80">{s.problem}</span>
+              </li>
+            ))}
+          </ul>
+          {suspicious.some(s => s.inRequisites) && (
+            <button
+              onClick={() => openRequisites(lead)}
+              className="mt-2 inline-flex items-center gap-1 font-medium text-orange-700 hover:text-orange-900 transition"
+            >
+              <Icon name="Pencil" size={12} />
+              Исправить реквизиты
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   if (missing.length === 0) {
     return (
-      <div className="mt-3 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
-        <Icon name="CircleCheck" size={14} className="shrink-0" />
-        Все данные заполнены — документы сформируются полностью
-      </div>
+      <>
+        {suspicious.length === 0 && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+            <Icon name="CircleCheck" size={14} className="shrink-0" />
+            Все данные заполнены — документы сформируются полностью
+          </div>
+        )}
+        {suspiciousBlock}
+      </>
     );
   }
 
@@ -26,6 +61,7 @@ export default function LeadReadiness({ lead, openRequisites, openDealTerms }: L
   const hasTermGaps = missing.some(m => !m.inRequisites);
 
   return (
+    <>
     <div
       className={`mt-3 rounded-lg px-3 py-2.5 border text-xs ${
         isBlocking
@@ -75,5 +111,7 @@ export default function LeadReadiness({ lead, openRequisites, openDealTerms }: L
         </div>
       </div>
     </div>
+    {suspiciousBlock}
+    </>
   );
 }
