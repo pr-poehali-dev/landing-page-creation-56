@@ -39,6 +39,9 @@ interface LeadCardProps {
   setTermsForm: (f: DealTerms) => void;
   saveDealTerms: (id: number) => void;
   savingTerms: boolean;
+  confirmDeleteId: number | null;
+  setConfirmDeleteId: (id: number | null) => void;
+  deleteLead: (id: number) => void;
 }
 
 export default function LeadCard({
@@ -77,6 +80,9 @@ export default function LeadCard({
   setTermsForm,
   saveDealTerms,
   savingTerms,
+  confirmDeleteId,
+  setConfirmDeleteId,
+  deleteLead,
 }: LeadCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
@@ -87,7 +93,16 @@ export default function LeadCard({
           <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-rose-600 font-medium">{l.phone}</a>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
-          <div className="text-xs text-slate-400">{formatDate(l.createdAt)}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-xs text-slate-400">{formatDate(l.createdAt)}</div>
+            <button
+              onClick={() => setConfirmDeleteId(l.id)}
+              title="Удалить заявку"
+              className="text-slate-300 hover:text-rose-600 transition"
+            >
+              <Icon name="Trash2" size={15} />
+            </button>
+          </div>
           <select
             value={l.status}
             disabled={updating === l.id}
@@ -100,6 +115,28 @@ export default function LeadCard({
           </select>
         </div>
       </div>
+      {confirmDeleteId === l.id && (
+        <div className="mt-3 bg-rose-50 border border-rose-200 rounded-xl p-4">
+          <div className="text-sm font-medium text-rose-900">Удалить заявку «{l.company || l.name}»?</div>
+          <div className="text-xs text-rose-700 mt-1">
+            Заявка и {l.documents.length > 0 ? `${l.documents.length} связанных документов исчезнут` : "её данные исчезнут"} из системы. Отменить это будет нельзя.
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => deleteLead(l.id)}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium rounded-lg px-3 py-2 transition"
+            >
+              Да, удалить
+            </button>
+            <button
+              onClick={() => setConfirmDeleteId(null)}
+              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-lg px-3 py-2 transition"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
       {l.comment && <p className="mt-3 text-slate-600 text-sm leading-relaxed">{l.comment}</p>}
       {(l.duration || l.days || l.totalPrice || l.startDate) && (
         <div className="mt-3 flex flex-wrap gap-2 text-xs">

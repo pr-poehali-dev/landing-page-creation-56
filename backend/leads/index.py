@@ -302,6 +302,20 @@ def handler(event: dict, context) -> dict:
 
         params = event.get('queryStringParameters') or {}
         doc_id = params.get('docId')
+        lead_id = params.get('leadId')
+
+        if lead_id:
+            cur.execute(f"DELETE FROM lead_documents WHERE lead_id = {int(lead_id)}")
+            cur.execute(f"DELETE FROM leads WHERE id = {int(lead_id)}")
+            conn.commit()
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 200,
+                'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                'body': json.dumps({'success': True}, ensure_ascii=False),
+                'isBase64Encoded': False
+            }
 
         if not doc_id:
             cur.close()
@@ -309,7 +323,7 @@ def handler(event: dict, context) -> dict:
             return {
                 'statusCode': 400,
                 'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'docId обязателен'}, ensure_ascii=False),
+                'body': json.dumps({'error': 'Нужен docId или leadId'}, ensure_ascii=False),
                 'isBase64Encoded': False
             }
 

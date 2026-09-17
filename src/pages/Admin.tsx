@@ -42,6 +42,7 @@ const Admin = () => {
   const [editingPaidId, setEditingPaidId] = useState<number | null>(null);
   const [paidInput, setPaidInput] = useState("");
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!adminKey) {
@@ -304,6 +305,22 @@ const Admin = () => {
     }
   }
 
+  async function deleteLead(id: number) {
+    const prev = leads;
+    setLeads(cur => cur.filter(l => l.id !== id));
+    setConfirmDeleteId(null);
+    try {
+      const res = await fetch(`${func2url.leads}?leadId=${id}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Key": adminKey || "" },
+      });
+      if (!res.ok) throw new Error("fail");
+    } catch {
+      setLeads(prev);
+      setError("Не удалось удалить заявку");
+    }
+  }
+
   async function changeStatus(id: number, status: string) {
     setUpdating(id);
     try {
@@ -432,6 +449,9 @@ const Admin = () => {
                 setTermsForm={setTermsForm}
                 saveDealTerms={saveDealTerms}
                 savingTerms={savingTerms}
+                confirmDeleteId={confirmDeleteId}
+                setConfirmDeleteId={setConfirmDeleteId}
+                deleteLead={deleteLead}
               />
             ))}
           </div>
