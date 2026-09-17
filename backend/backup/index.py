@@ -68,7 +68,7 @@ def build_workbook(leads, docs):
     ws = wb.active
     ws.title = 'Заявки'
     ws.append([
-        'ID', 'Дата заявки', 'Статус', 'Имя', 'Телефон', 'Компания',
+        'ID', 'Дата заявки', 'Статус', 'Имя', 'Телефон', 'Email', 'Компания',
         'Сумма, ₽', 'Оплачено, ₽', 'Остаток, ₽',
         'Размещение, ₽', 'Ролик, ₽', 'Нужен ролик',
         'Начало', 'Окончание', 'Дней', 'Хронометраж, сек',
@@ -90,6 +90,7 @@ def build_workbook(leads, docs):
             STATUS_LABELS.get(l['status'], l['status'] or ''),
             l['name'] or '',
             l['phone'] or '',
+            l.get('email') or '',
             l['company'] or '',
             price,
             paid,
@@ -115,10 +116,10 @@ def build_workbook(leads, docs):
             l['comment'] or '',
         ])
 
-    widths = [6, 17, 12, 22, 16, 26, 13, 13, 13, 15, 12, 12, 12, 12, 8, 16,
+    widths = [6, 17, 12, 22, 16, 26, 26, 13, 13, 13, 15, 12, 12, 12, 12, 8, 16,
               15, 12, 16, 40, 30, 24, 12, 24, 24, 20, 18, 40]
-    style_sheet(ws, widths, 28)
-    for row in ws.iter_rows(min_row=2, min_col=7, max_col=11):
+    style_sheet(ws, widths, 29)
+    for row in ws.iter_rows(min_row=2, min_col=8, max_col=12):
         for cell in row:
             cell.number_format = '# ##0'
 
@@ -180,13 +181,13 @@ def fetch_data(dsn):
         "SELECT id, name, phone, comment, duration, days, need_video, total_price, source, "
         "status, created_at, company, start_date, end_date, placement_amount, video_amount, "
         "inn, kpp, ogrn, legal_address, bank_name, bank_account, bank_bik, bank_corr_account, "
-        "signer_name, signer_position, paid_amount FROM leads ORDER BY id"
+        "signer_name, signer_position, paid_amount, email FROM leads ORDER BY id"
     )
     cols = ['id', 'name', 'phone', 'comment', 'duration', 'days', 'need_video', 'total_price',
             'source', 'status', 'created_at', 'company', 'start_date', 'end_date',
             'placement_amount', 'video_amount', 'inn', 'kpp', 'ogrn', 'legal_address',
             'bank_name', 'bank_account', 'bank_bik', 'bank_corr_account', 'signer_name',
-            'signer_position', 'paid_amount']
+            'signer_position', 'paid_amount', 'email']
     leads = [dict(zip(cols, r)) for r in cur.fetchall()]
 
     cur.execute("SELECT lead_id, doc_type, file_url, doc_no, created_at FROM lead_documents ORDER BY id")

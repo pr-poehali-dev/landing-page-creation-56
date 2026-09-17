@@ -99,6 +99,7 @@ const Admin = () => {
     setEditingId(l.id);
     setReqForm({
       company: l.company || "",
+      email: l.email || "",
       inn: l.inn || "",
       kpp: l.kpp || "",
       ogrn: l.ogrn || "",

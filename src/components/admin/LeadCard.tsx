@@ -2,6 +2,7 @@ import Icon from "@/components/ui/icon";
 import { Lead, Requisites, DealTerms, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 import LeadReadiness from "./LeadReadiness";
 import DealTermsForm from "./DealTermsForm";
+import SendDocButton from "./SendDocButton";
 
 interface LeadCardProps {
   lead: Lead;
@@ -289,6 +290,7 @@ export default function LeadCard({
                   <span className="truncate">{doc.type === "contract" ? "Договор" : doc.type === "invoice" ? "Счёт" : "Акт"}</span>
                   {doc.createdAt && <span className="text-xs text-slate-400 shrink-0">{formatDate(doc.createdAt)}</span>}
                 </a>
+                <SendDocButton docId={doc.id} clientEmail={l.email} />
                 <button
                   onClick={() => deleteDocument(l.id, doc.id)}
                   disabled={!doc.id}
@@ -318,6 +320,10 @@ export default function LeadCard({
           <div className="sm:col-span-2">
             <label className="text-xs font-medium text-slate-500 block mb-1">Организация / ИП</label>
             <input value={reqForm.company} onChange={e => setReqForm({ ...reqForm, company: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="ООО «Компания»" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="text-xs font-medium text-slate-500 block mb-1">Email для отправки документов</label>
+            <input type="email" value={reqForm.email} onChange={e => setReqForm({ ...reqForm, email: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400" placeholder="client@company.ru" />
           </div>
           <div>
             <label className="text-xs font-medium text-slate-500 block mb-1">ИНН</label>

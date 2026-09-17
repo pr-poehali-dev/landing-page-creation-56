@@ -26,6 +26,7 @@ export interface Lead {
   signerName: string | null;
   signerPosition: string | null;
   paidAmount: number;
+  email: string | null;
   documents: LeadDocument[];
 }
 
@@ -39,6 +40,7 @@ export interface LeadDocument {
 
 export interface Requisites {
   company: string;
+  email: string;
   inn: string;
   kpp: string;
   ogrn: string;
@@ -52,7 +54,7 @@ export interface Requisites {
 }
 
 export const EMPTY_REQUISITES: Requisites = {
-  company: "", inn: "", kpp: "", ogrn: "", legalAddress: "",
+  company: "", email: "", inn: "", kpp: "", ogrn: "", legalAddress: "",
   bankName: "", bankAccount: "", bankBik: "", bankCorrAccount: "",
   signerName: "", signerPosition: "",
 };

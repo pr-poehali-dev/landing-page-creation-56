@@ -11,6 +11,7 @@ const EMPTY = {
   name: "",
   phone: "",
   company: "",
+  email: "",
   comment: "",
   totalPrice: "",
   duration: "",
@@ -44,6 +45,7 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
           name: form.name.trim(),
           phone: form.phone.trim(),
           company: form.company.trim(),
+          email: form.email.trim(),
           comment: form.comment.trim(),
           totalPrice: form.totalPrice ? Number(form.totalPrice) : null,
           duration: form.duration ? Number(form.duration) : null,
@@ -68,6 +70,7 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
         status: "new",
         createdAt: new Date().toISOString(),
         company: form.company.trim() || null,
+        email: form.email.trim() || null,
         startDate: null,
         endDate: null,
         placementAmount: null,
@@ -138,12 +141,22 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
                 className={inputClass}
               />
             </div>
-            <div className="sm:col-span-2">
+            <div>
               <label className="text-xs text-slate-500 mb-1 block">Организация</label>
               <input
                 value={form.company}
                 onChange={e => set("company", e.target.value)}
                 placeholder="ООО «Ромашка»"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Email для документов</label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={e => set("email", e.target.value)}
+                placeholder="client@company.ru"
                 className={inputClass}
               />
             </div>

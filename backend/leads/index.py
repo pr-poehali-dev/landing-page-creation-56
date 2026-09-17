@@ -57,10 +57,14 @@ def handler(event: dict, context) -> dict:
         company_esc = company.replace("'", "''")
         company_val = f"'{company_esc}'" if company else 'NULL'
 
+        email = str(body.get('email', ''))[:255]
+        email_esc = email.replace("'", "''")
+        email_val = f"'{email_esc}'" if email else 'NULL'
+
         query = (
-            f"INSERT INTO leads (name, phone, comment, duration, days, need_video, total_price, source, company) "
+            f"INSERT INTO leads (name, phone, comment, duration, days, need_video, total_price, source, company, email) "
             f"VALUES ('{name_esc}', '{phone_esc}', '{comment_esc}', {dur_val}, {days_val}, "
-            f"{'TRUE' if need_video else 'FALSE'}, {price_val}, '{source_esc}', {company_val}) RETURNING id"
+            f"{'TRUE' if need_video else 'FALSE'}, {price_val}, '{source_esc}', {company_val}, {email_val}) RETURNING id"
         )
         cur.execute(query)
         lead_id = cur.fetchone()[0]
@@ -94,7 +98,7 @@ def handler(event: dict, context) -> dict:
             "SELECT id, name, phone, comment, duration, days, need_video, total_price, "
             "source, status, created_at, company, start_date, end_date, placement_amount, video_amount, "
             "inn, kpp, ogrn, legal_address, bank_name, bank_account, bank_bik, bank_corr_account, "
-            "signer_name, signer_position, paid_amount "
+            "signer_name, signer_position, paid_amount, email "
             "FROM leads ORDER BY created_at DESC LIMIT 200"
         )
         rows = cur.fetchall()
@@ -111,6 +115,7 @@ def handler(event: dict, context) -> dict:
             'bankName': r[20], 'bankAccount': r[21], 'bankBik': r[22], 'bankCorrAccount': r[23],
             'signerName': r[24], 'signerPosition': r[25],
             'paidAmount': r[26] or 0,
+            'email': r[27],
             'documents': []
         } for r in rows]
 
@@ -183,6 +188,7 @@ def handler(event: dict, context) -> dict:
 
         requisite_fields = {
             'company': 'company', 'inn': 'inn', 'kpp': 'kpp', 'ogrn': 'ogrn',
+            'email': 'email',
             'legalAddress': 'legal_address', 'bankName': 'bank_name', 'bankAccount': 'bank_account',
             'bankBik': 'bank_bik', 'bankCorrAccount': 'bank_corr_account',
             'signerName': 'signer_name', 'signerPosition': 'signer_position'
