@@ -3,6 +3,19 @@ import os
 from datetime import datetime
 import psycopg2
 
+STATUS_LABELS = {
+    'new': 'Новая', 'estimate': 'Смета', 'contract': 'Договор',
+    'payment': 'Оплата', 'live': 'Размещение', 'completed': 'Завершена', 'lost': 'Потеряна',
+}
+
+
+def log_event(cur, lead_id, event_type, details):
+    text = str(details or '')[:500].replace("'", "''")
+    cur.execute(
+        f"INSERT INTO lead_events (lead_id, event_type, details) "
+        f"VALUES ({int(lead_id)}, '{event_type}', '{text}')"
+    )
+
 
 def handler(event: dict, context) -> dict:
     """Приём заявок с сайта Флэшборд и получение списка заявок для админки"""
@@ -68,6 +81,8 @@ def handler(event: dict, context) -> dict:
         )
         cur.execute(query)
         lead_id = cur.fetchone()[0]
+        log_event(cur, lead_id, 'created',
+                  'Добавлена вручную' if source == 'manual' else 'Заявка с сайта')
         conn.commit()
         cur.close()
         conn.close()
@@ -116,7 +131,7 @@ def handler(event: dict, context) -> dict:
             'signerName': r[24], 'signerPosition': r[25],
             'paidAmount': r[26] or 0,
             'email': r[27],
-            'documents': []
+            'documents': [], 'events': []
         } for r in rows]
 
         cur.execute(
@@ -132,6 +147,19 @@ def handler(event: dict, context) -> dict:
             })
         for lead in leads:
             lead['documents'] = docs_by_lead.get(lead['id'], [])
+
+        cur.execute(
+            "SELECT lead_id, event_type, details, created_at "
+            "FROM lead_events ORDER BY created_at DESC, id DESC"
+        )
+        events_by_lead = {}
+        for er in cur.fetchall():
+            events_by_lead.setdefault(er[0], []).append({
+                'type': er[1], 'details': er[2],
+                'createdAt': er[3].isoformat() if er[3] else None
+            })
+        for lead in leads:
+            lead['events'] = events_by_lead.get(lead['id'], [])
 
         cur.close()
         conn.close()
@@ -172,6 +200,11 @@ def handler(event: dict, context) -> dict:
             }
 
         set_clauses = []
+
+        cur.execute(f"SELECT status, paid_amount, total_price FROM leads WHERE id = {int(lead_id)}")
+        prev_row = cur.fetchone()
+        prev_status = prev_row[0] if prev_row else None
+        prev_paid = (prev_row[1] or 0) if prev_row else 0
 
         if 'status' in body:
             status = body.get('status')
@@ -277,9 +310,27 @@ def handler(event: dict, context) -> dict:
                 'isBase64Encoded': False
             }
 
-        query = f"UPDATE leads SET {', '.join(set_clauses)} WHERE id = {int(lead_id)} RETURNING status"
+        query = f"UPDATE leads SET {', '.join(set_clauses)} WHERE id = {int(lead_id)} RETURNING status, paid_amount"
         cur.execute(query)
-        new_status = cur.fetchone()[0]
+        updated = cur.fetchone()
+        new_status, new_paid = updated[0], updated[1] or 0
+
+        if new_status != prev_status:
+            log_event(cur, lead_id, 'status',
+                      f"{STATUS_LABELS.get(prev_status, prev_status)} → {STATUS_LABELS.get(new_status, new_status)}")
+
+        if new_paid != prev_paid:
+            diff = new_paid - prev_paid
+            sign = '+' if diff > 0 else '−'
+            log_event(cur, lead_id, 'payment',
+                      f"{sign}{abs(diff):,}".replace(',', ' ') + f" ₽ · всего {new_paid:,}".replace(',', ' ') + " ₽")
+
+        if any(c.startswith(('company', 'inn', 'bank_', 'signer_', 'email', 'legal_', 'kpp', 'ogrn')) for c in set_clauses):
+            log_event(cur, lead_id, 'requisites', 'Реквизиты обновлены')
+
+        if any(c.startswith(('total_price', 'start_date', 'end_date', 'duration', 'days', 'placement_amount', 'video_amount')) for c in set_clauses):
+            log_event(cur, lead_id, 'terms', 'Условия размещения обновлены')
+
         conn.commit()
         cur.close()
         conn.close()
@@ -311,6 +362,7 @@ def handler(event: dict, context) -> dict:
         lead_id = params.get('leadId')
 
         if lead_id:
+            cur.execute(f"DELETE FROM lead_events WHERE lead_id = {int(lead_id)}")
             cur.execute(f"DELETE FROM lead_documents WHERE lead_id = {int(lead_id)}")
             cur.execute(f"DELETE FROM leads WHERE id = {int(lead_id)}")
             conn.commit()

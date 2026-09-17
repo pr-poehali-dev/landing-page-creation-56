@@ -28,6 +28,13 @@ export interface Lead {
   paidAmount: number;
   email: string | null;
   documents: LeadDocument[];
+  events: LeadEvent[];
+}
+
+export interface LeadEvent {
+  type: string;
+  details: string | null;
+  createdAt: string | null;
 }
 
 export interface LeadDocument {

@@ -2,6 +2,7 @@ import Icon from "@/components/ui/icon";
 import { Lead, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 import LeadReadiness from "./LeadReadiness";
 import SendDocButton from "./SendDocButton";
+import LeadHistory from "./LeadHistory";
 
 interface LeadCardProps {
   lead: Lead;
@@ -278,6 +279,7 @@ export default function LeadCard({
         </div>
       )}
 
+      <LeadHistory events={l.events} />
     </div>
   );
 }

@@ -99,6 +99,7 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
         signerPosition: null,
         paidAmount: 0,
         documents: [],
+        events: [{ type: "created", details: "Добавлена вручную", createdAt: new Date().toISOString() }],
       });
       setForm(EMPTY);
       setTouched({});

@@ -341,6 +341,10 @@ def handler(event: dict, context) -> dict:
         f"VALUES ({int(lead_id)}, 'act', '{cdn_url}', '{act_no_esc}') RETURNING id"
     )
     doc_id = cur2.fetchone()[0]
+    cur2.execute(
+        f"INSERT INTO lead_events (lead_id, event_type, details) "
+        f"VALUES ({int(lead_id)}, 'document', 'Акт № {act_no_esc}')"
+    )
     conn2.commit()
     cur2.close()
     conn2.close()

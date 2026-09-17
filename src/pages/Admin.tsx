@@ -19,10 +19,17 @@ import {
   DealTerms,
   EMPTY_DEAL_TERMS,
   STATUS_ORDER,
+  STATUS_LABELS,
   ACTIVE_STATUSES,
 } from "@/components/admin/adminTypes";
 
 const PAGE_SIZE = 20;
+
+const DOC_NAMES: Record<string, string> = { contract: "Договор", invoice: "Счёт", act: "Акт" };
+
+function docEventLabel(doc: LeadDocument): string {
+  return `${DOC_NAMES[doc.type] || "Документ"}${doc.no ? ` № ${doc.no}` : ""}`;
+}
 
 const Admin = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -211,7 +218,7 @@ const Admin = () => {
         body: JSON.stringify({ id, ...reqForm }),
       });
       if (!res.ok) throw new Error("fail");
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, ...reqForm } : l)));
+      setLeads(prev => prev.map(l => (l.id === id ? withEvent({ ...l, ...reqForm }, "requisites", "Реквизиты обновлены") : l)));
       setEditingId(null);
     } catch {
       setError("Не удалось сохранить реквизиты");
@@ -255,6 +262,10 @@ const Admin = () => {
     return sorted;
   }, [leads, statusFilter, sortBy, search]);
 
+  function withEvent(l: Lead, type: string, details: string): Lead {
+    return { ...l, events: [{ type, details, createdAt: new Date().toISOString() }, ...(l.events || [])] };
+  }
+
   function focusLead(id: number) {
     setSearch("");
     setStatusFilter("all");
@@ -289,7 +300,7 @@ const Admin = () => {
       if (!res.ok) throw new Error(data.error || "fail");
       window.open(data.url, "_blank");
       const newDoc: LeadDocument = { id: data.docId ?? null, type: "contract", url: data.url, no: null, createdAt: new Date().toISOString() };
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
+      setLeads(prev => prev.map(l => (l.id === id ? withEvent({ ...l, documents: [newDoc, ...l.documents] }, "document", docEventLabel(newDoc)) : l)));
     } catch (e) {
       setContractError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать договор" }));
     } finally {
@@ -310,7 +321,7 @@ const Admin = () => {
       if (!res.ok) throw new Error(data.error || "fail");
       window.open(data.url, "_blank");
       const newDoc: LeadDocument = { id: data.docId ?? null, type: "invoice", url: data.url, no: null, createdAt: new Date().toISOString() };
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
+      setLeads(prev => prev.map(l => (l.id === id ? withEvent({ ...l, documents: [newDoc, ...l.documents] }, "document", docEventLabel(newDoc)) : l)));
     } catch (e) {
       setInvoiceError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать счёт" }));
     } finally {
@@ -331,7 +342,7 @@ const Admin = () => {
       if (!res.ok) throw new Error(data.error || "fail");
       window.open(data.url, "_blank");
       const newDoc: LeadDocument = { id: data.docId ?? null, type: "act", url: data.url, no: null, createdAt: new Date().toISOString() };
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, documents: [newDoc, ...l.documents] } : l)));
+      setLeads(prev => prev.map(l => (l.id === id ? withEvent({ ...l, documents: [newDoc, ...l.documents] }, "document", docEventLabel(newDoc)) : l)));
     } catch (e) {
       setActError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать акт" }));
     } finally {
@@ -378,7 +389,9 @@ const Admin = () => {
         body: JSON.stringify({ id, status }),
       });
       if (!res.ok) throw new Error("fail");
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, status } : l)));
+      setLeads(prev => prev.map(l => (l.id === id
+        ? withEvent({ ...l, status }, "status", `${STATUS_LABELS[l.status] || l.status} → ${STATUS_LABELS[status] || status}`)
+        : l)));
     } catch {
       setError("Не удалось изменить статус");
     } finally {
@@ -402,7 +415,14 @@ const Admin = () => {
       });
       if (!res.ok) throw new Error("fail");
       const data = await res.json();
-      setLeads(prev => prev.map(l => (l.id === id ? { ...l, paidAmount, status: data.status ?? l.status } : l)));
+      setLeads(prev => prev.map(l => {
+        if (l.id !== id) return l;
+        const diff = paidAmount - (l.paidAmount || 0);
+        const sign = diff > 0 ? "+" : "−";
+        const updated = { ...l, paidAmount, status: data.status ?? l.status };
+        return diff === 0 ? updated
+          : withEvent(updated, "payment", `${sign}${Math.abs(diff).toLocaleString("ru-RU")} ₽ · всего ${paidAmount.toLocaleString("ru-RU")} ₽`);
+      }));
       setEditingPaidId(null);
     } catch {
       setError("Не удалось сохранить сумму оплаты");
