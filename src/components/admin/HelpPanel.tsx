@@ -62,23 +62,28 @@ export default function HelpPanel() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mb-4 overflow-hidden">
+    <div className="bg-white rounded-2xl border-2 border-indigo-200 shadow-sm mb-4 overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition"
+        className="w-full flex items-center justify-between px-5 py-4 bg-indigo-50/60 hover:bg-indigo-50 transition"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center">
-            <Icon name="BookOpen" size={18} className="text-indigo-600" />
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
+            <Icon name="BookOpen" size={19} className="text-white" />
           </div>
           <div className="text-left">
-            <div className="font-semibold text-slate-900 text-sm">Как работать с системой</div>
-            <div className="text-xs text-slate-500 mt-0.5">
+            <div className="font-semibold text-slate-900 text-base">Как работать с системой</div>
+            <div className="text-xs text-slate-600 mt-0.5">
               Краткая инструкция: от заявки до закрывающих документов
             </div>
           </div>
         </div>
-        <Icon name={open ? "ChevronUp" : "ChevronDown"} size={18} className="text-slate-400" />
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="hidden sm:block text-xs font-medium text-indigo-700">
+            {open ? "Свернуть" : "Открыть"}
+          </span>
+          <Icon name={open ? "ChevronUp" : "ChevronDown"} size={18} className="text-indigo-600" />
+        </div>
       </button>
 
       {open && (
@@ -127,6 +132,14 @@ export default function HelpPanel() {
               </div>
             </div>
           </div>
+
+          <button
+            onClick={() => setOpen(false)}
+            className="w-full mt-4 text-xs font-medium text-slate-500 hover:text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-xl py-2.5 flex items-center justify-center gap-1.5 transition"
+          >
+            <Icon name="ChevronUp" size={14} />
+            Свернуть инструкцию
+          </button>
         </div>
       )}
     </div>

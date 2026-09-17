@@ -393,8 +393,8 @@ const Admin = () => {
           onLogout={handleLogout}
         />
 
-        {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && <HelpPanel />}
+        {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
         {loading && <div className="text-slate-500">Загружаем…</div>}
