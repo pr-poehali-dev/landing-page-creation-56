@@ -2,6 +2,8 @@ import { useState } from "react";
 import func2url from "../../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
 import { Lead } from "./adminTypes";
+import ValidatedInput from "./ValidatedInput";
+import { validatePhone, validateEmail, formatPhone } from "./validation";
 
 interface NewLeadFormProps {
   onCreated: (lead: Lead) => void;
@@ -24,6 +26,10 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const phoneError = validatePhone(form.phone);
+  const emailError = validateEmail(form.email);
 
   function set<K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) {
     setForm(f => ({ ...f, [key]: value }));
@@ -33,6 +39,12 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
     e.preventDefault();
     if (!form.name.trim() || !form.phone.trim()) {
       setError("Имя и телефон обязательны");
+      setTouched({ phone: true, email: true });
+      return;
+    }
+    if (phoneError || emailError) {
+      setTouched({ phone: true, email: true });
+      setError("Проверьте отмеченные поля");
       return;
     }
     setSaving(true);
@@ -89,6 +101,7 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
         documents: [],
       });
       setForm(EMPTY);
+      setTouched({});
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка сохранения");
@@ -132,15 +145,18 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
                 className={inputClass}
               />
             </div>
-            <div>
-              <label className="text-xs text-slate-500 mb-1 block">Телефон *</label>
-              <input
-                value={form.phone}
-                onChange={e => set("phone", e.target.value)}
-                placeholder="+7 900 111-22-33"
-                className={inputClass}
-              />
-            </div>
+            <ValidatedInput
+              label="Телефон *"
+              value={form.phone}
+              onChange={v => set("phone", v)}
+              onBlur={() => {
+                setTouched(t => ({ ...t, phone: true }));
+                if (!validatePhone(form.phone)) set("phone", formatPhone(form.phone));
+              }}
+              error={touched.phone ? phoneError : null}
+              placeholder="+7 900 111-22-33"
+              inputMode="tel"
+            />
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Организация</label>
               <input
@@ -150,16 +166,16 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
                 className={inputClass}
               />
             </div>
-            <div>
-              <label className="text-xs text-slate-500 mb-1 block">Email для документов</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={e => set("email", e.target.value)}
-                placeholder="client@company.ru"
-                className={inputClass}
-              />
-            </div>
+            <ValidatedInput
+              label="Email для документов"
+              value={form.email}
+              onChange={v => set("email", v)}
+              onBlur={() => setTouched(t => ({ ...t, email: true }))}
+              error={touched.email ? emailError : null}
+              placeholder="client@company.ru"
+              type="email"
+              inputMode="email"
+            />
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Стоимость, ₽</label>
               <input
