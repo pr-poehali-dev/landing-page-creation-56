@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import func2url from "../../../backend/func2url.json";
 import { calcPlacement, plural, fmt, MIN_DAYS, CalcPreset } from "./pricing";
+import { endFromStart } from "../admin/dealDates";
 
 interface LeadFooterProps {
   preset?: CalcPreset | null;
@@ -43,6 +44,11 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
   const durNum = Number(duration) || 0;
   const daysNum = Number(days) || 0;
   const estimate = durNum > 0 && daysNum >= MIN_DAYS ? calcPlacement(durNum, daysNum) : null;
+  const endDate = startDate && daysNum > 0 ? endFromStart(startDate, daysNum) : "";
+  const period =
+    startDate && endDate
+      ? `${new Date(startDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })} — ${new Date(endDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}`
+      : "";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,7 +80,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       const text = encodeURIComponent(
         `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}` +
           `\nХронометраж: ${duration ? duration + " сек" : "—"}` +
-          `\nСрок: ${days ? days + " дн." : "—"}` +
+          `\nСрок: ${days ? days + " дн." + (period ? ` (${period})` : "") : "—"}` +
           `\nПредварительно: ${estimate ? fmt(estimate.total) : "—"}` +
           `\nСтарт: ${startDate ? new Date(startDate).toLocaleDateString("ru-RU") : "—"}` +
           `\nКомментарий: ${comment || "—"}`
@@ -187,7 +193,8 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                       </div>
                       <div className="fb-est-note">
                         {daysNum} {plural(daysNum, "день", "дня", "дней")} × {durNum}″ ·{" "}
-                        {estimate.outputs.toLocaleString("ru-RU")} выходов. Точную смету пришлём в течение часа.
+                        {estimate.outputs.toLocaleString("ru-RU")} выходов
+                        {period && <> · {period}</>}. Точную смету пришлём в течение часа.
                       </div>
                     </div>
                   )}

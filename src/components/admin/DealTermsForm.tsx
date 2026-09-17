@@ -1,4 +1,5 @@
 import { DealTerms } from "./adminTypes";
+import { syncPeriod, periodConflict } from "./dealDates";
 
 interface DealTermsFormProps {
   form: DealTerms;
@@ -15,6 +16,11 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving 
   const total = Number(form.totalPrice) || 0;
   const video = Number(form.videoAmount) || 0;
   const placement = Math.max(total - (form.needVideo ? video : 0), 0);
+  const conflict = periodConflict(form);
+
+  function setPeriod(field: "startDate" | "endDate" | "days", value: string) {
+    setForm({ ...form, ...syncPeriod(form, field, value) });
+  }
 
   return (
     <div>
@@ -49,7 +55,7 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving 
           <input
             type="date"
             value={form.startDate}
-            onChange={e => setForm({ ...form, startDate: e.target.value })}
+            onChange={e => setPeriod("startDate", e.target.value)}
             className={inputCls}
           />
         </div>
@@ -59,17 +65,19 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving 
             type="date"
             value={form.endDate}
             min={form.startDate || undefined}
-            onChange={e => setForm({ ...form, endDate: e.target.value })}
+            onChange={e => setPeriod("endDate", e.target.value)}
             className={inputCls}
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-500 block mb-1">Дней размещения</label>
+          <label className="text-xs font-medium text-slate-500 block mb-1">
+            Дней размещения <span className="text-slate-400 font-normal">· считается по датам</span>
+          </label>
           <input
             type="number"
             min={0}
             value={form.days}
-            onChange={e => setForm({ ...form, days: e.target.value })}
+            onChange={e => setPeriod("days", e.target.value)}
             className={inputCls}
             placeholder="30"
           />
@@ -97,6 +105,12 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving 
             Нужно изготовление видеоролика
           </label>
         </div>
+
+        {conflict && (
+          <div className="sm:col-span-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
+            {conflict}
+          </div>
+        )}
 
         {total > 0 && (
           <div className="sm:col-span-2 bg-slate-50 rounded-lg px-3 py-2 text-xs text-slate-600">

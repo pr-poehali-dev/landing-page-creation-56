@@ -283,6 +283,28 @@ def handler(event: dict, context) -> dict:
                     }
                 set_clauses.append(f"{col} = '{val}'")
 
+        start_in = str(body.get('startDate') or '')[:10] if body.get('startDate') else ''
+        end_in = str(body.get('endDate') or '')[:10] if body.get('endDate') else ''
+        if start_in and end_in:
+            try:
+                d1 = datetime.strptime(start_in, '%Y-%m-%d')
+                d2 = datetime.strptime(end_in, '%Y-%m-%d')
+            except ValueError:
+                d1 = d2 = None
+            if d1 and d2:
+                if d2 < d1:
+                    cur.close()
+                    conn.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'error': 'Дата окончания раньше даты начала'}, ensure_ascii=False),
+                        'isBase64Encoded': False
+                    }
+                real_days = (d2 - d1).days + 1
+                set_clauses = [c for c in set_clauses if not c.startswith('days =')]
+                set_clauses.append(f"days = {real_days}")
+
         if 'needVideo' in body:
             set_clauses.append(f"need_video = {'TRUE' if body.get('needVideo') else 'FALSE'}")
 
