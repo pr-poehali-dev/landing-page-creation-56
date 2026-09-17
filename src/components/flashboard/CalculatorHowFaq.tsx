@@ -1,20 +1,8 @@
 import { useState, useMemo } from "react";
+import { calcPlacement, plural, fmt, DURATIONS, MIN_DAYS, MAX_DAYS, CalcPreset } from "./pricing";
 
-const RATE = 325;
-const OUT = 204;
-const OTS = 33000;
-
-function plural(n: number, a: string, b: string, c: string) {
-  const n100 = n % 100;
-  if (n100 >= 11 && n100 <= 14) return c;
-  const n10 = n % 10;
-  if (n10 === 1) return a;
-  if (n10 >= 2 && n10 <= 4) return b;
-  return c;
-}
-
-function fmt(n: number) {
-  return Math.round(n).toLocaleString("ru-RU") + " ₽";
+interface CalculatorHowFaqProps {
+  onApply?: (preset: CalcPreset) => void;
 }
 
 const STEPS = [
@@ -63,18 +51,15 @@ const FAQS = [
   { q: "Есть ли скидки?", a: "Агентствам и при долгосрочных контрактах (от 3 месяцев) — индивидуальные условия. Арендаторам ТЦ «Изумруд Плаза» — специальный тариф." },
 ];
 
-export default function CalculatorHowFaq() {
+export default function CalculatorHowFaq({ onApply }: CalculatorHowFaqProps) {
   const [dur, setDur] = useState(10);
   const [days, setDays] = useState(30);
 
-  const calc = useMemo(() => {
-    const k = dur > 15 ? 1.25 : 1;
-    const placement = Math.round(RATE * dur * days * k);
-    const cpt = placement / ((OTS * days) / 1000);
-    const outputs = OUT * days;
-    const contacts = Math.round((OTS * days) / 1000) * 1000;
-    return { placement, cpt, outputs, contacts, total: placement };
-  }, [dur, days]);
+  const calc = useMemo(() => calcPlacement(dur, days), [dur, days]);
+
+  function handleApply() {
+    onApply?.({ duration: dur, days, price: calc.total, stamp: Date.now() });
+  }
 
   return (
     <>
@@ -88,7 +73,7 @@ export default function CalculatorHowFaq() {
             <div className="fb-calcL">
               <div className="fb-lbl">Хронометраж ролика</div>
               <div className="fb-durs">
-                {[5, 10, 15, 20].map(d => (
+                {DURATIONS.map(d => (
                   <button key={d} className={`fb-dur${dur === d ? " fb-on" : ""}`} onClick={() => setDur(d)}>{d}″</button>
                 ))}
               </div>
@@ -97,8 +82,8 @@ export default function CalculatorHowFaq() {
                 <div className="fb-lbl" style={{ margin: 0 }}>Срок размещения</div>
                 <div className="fb-dv">{days} {plural(days, "день", "дня", "дней")}</div>
               </div>
-              <input type="range" min={5} max={90} step={5} value={days} onChange={e => setDays(+e.target.value)} />
-              <div className="fb-rl"><span>5 дней</span><span>90 дней</span></div>
+              <input type="range" min={MIN_DAYS} max={MAX_DAYS} step={5} value={days} onChange={e => setDays(+e.target.value)} />
+              <div className="fb-rl"><span>{MIN_DAYS} дней</span><span>{MAX_DAYS} дней</span></div>
             </div>
             <div className="fb-calcR">
               <div className="fb-crk">✦ Ваша кампания</div>
@@ -112,7 +97,7 @@ export default function CalculatorHowFaq() {
               <div className="fb-ctotal">
                 <div className="fb-l">Итого</div>
                 <div className="fb-v">{fmt(calc.total)}</div>
-                <a className="fb-btn" href="#lead">Забронировать размещение</a>
+                <a className="fb-btn" href="#lead" onClick={handleApply}>Забронировать этот расчёт</a>
                 <div className="fb-cdisc">Расчёт предварительный, не является офертой. Точную смету пришлём в течение часа.</div>
               </div>
             </div>

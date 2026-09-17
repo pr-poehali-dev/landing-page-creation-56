@@ -7,11 +7,13 @@ import CalculatorHowFaq from "@/components/flashboard/CalculatorHowFaq";
 import LeadFooter from "@/components/flashboard/LeadFooter";
 import StickyBar from "@/components/flashboard/StickyBar";
 import Reveal from "@/components/flashboard/Reveal";
+import { CalcPreset } from "@/components/flashboard/pricing";
 
 const Index = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
+  const [calcPreset, setCalcPreset] = useState<CalcPreset | null>(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -35,10 +37,10 @@ const Index = () => {
         <MapComparison />
       </Reveal>
       <Reveal>
-        <CalculatorHowFaq />
+        <CalculatorHowFaq onApply={setCalcPreset} />
       </Reveal>
       <Reveal>
-        <LeadFooter />
+        <LeadFooter preset={calcPreset} />
       </Reveal>
       <StickyBar visible={showSticky} />
     </div>

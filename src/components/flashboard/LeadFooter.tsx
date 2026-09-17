@@ -1,5 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import func2url from "../../../backend/func2url.json";
+import { calcPlacement, plural, fmt, MIN_DAYS, CalcPreset } from "./pricing";
+
+interface LeadFooterProps {
+  preset?: CalcPreset | null;
+}
 
 function formatPhone(value: string) {
   let d = value.replace(/\D/g, "");
@@ -16,16 +21,28 @@ function formatPhone(value: string) {
   return res;
 }
 
-export default function LeadFooter() {
+export default function LeadFooter({ preset }: LeadFooterProps) {
   const today = new Date().toISOString().slice(0, 10);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [comment, setComment] = useState("");
   const [duration, setDuration] = useState("");
+  const [days, setDays] = useState("");
   const [startDate, setStartDate] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!preset) return;
+    setDuration(String(preset.duration));
+    setDays(String(preset.days));
+    setSent(false);
+  }, [preset]);
+
+  const durNum = Number(duration) || 0;
+  const daysNum = Number(days) || 0;
+  const estimate = durNum > 0 && daysNum >= MIN_DAYS ? calcPlacement(durNum, daysNum) : null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +58,8 @@ export default function LeadFooter() {
       phone,
       comment,
       duration: duration ? Number(duration) : null,
+      days: days ? Number(days) : null,
+      totalPrice: estimate ? estimate.total : null,
       startDate: startDate || null,
       source: "form",
     };
@@ -55,6 +74,8 @@ export default function LeadFooter() {
       const text = encodeURIComponent(
         `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}` +
           `\nХронометраж: ${duration ? duration + " сек" : "—"}` +
+          `\nСрок: ${days ? days + " дн." : "—"}` +
+          `\nПредварительно: ${estimate ? fmt(estimate.total) : "—"}` +
           `\nСтарт: ${startDate ? new Date(startDate).toLocaleDateString("ru-RU") : "—"}` +
           `\nКомментарий: ${comment || "—"}`
       );
@@ -63,6 +84,7 @@ export default function LeadFooter() {
       setPhone("");
       setComment("");
       setDuration("");
+      setDays("");
       setStartDate("");
     } catch {
       setError("Не удалось отправить. Позвоните нам: +7 908 992 50 20");
@@ -148,6 +170,27 @@ export default function LeadFooter() {
                       />
                     </div>
                   </div>
+                  <div className="fb-fld">
+                    <label>Срок размещения <i>(необяз.)</i></label>
+                    <select value={days} onChange={e => setDays(e.target.value)}>
+                      <option value="">Не знаю</option>
+                      {[5, 7, 14, 30, 45, 60, 90].map(d => (
+                        <option key={d} value={d}>{d} {plural(d, "день", "дня", "дней")}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {estimate && (
+                    <div className="fb-estimate">
+                      <div className="fb-est-row">
+                        <span>Примерная стоимость</span>
+                        <b>{fmt(estimate.total)}</b>
+                      </div>
+                      <div className="fb-est-note">
+                        {daysNum} {plural(daysNum, "день", "дня", "дней")} × {durNum}″ ·{" "}
+                        {estimate.outputs.toLocaleString("ru-RU")} выходов. Точную смету пришлём в течение часа.
+                      </div>
+                    </div>
+                  )}
                   <div className="fb-fld">
                     <label>Что рекламируем? <i>(необязательно)</i></label>
                     <textarea placeholder="Например: открытие автосервиса на Семёновской, нужны водители с Океанского" value={comment} onChange={e => setComment(e.target.value)} />
