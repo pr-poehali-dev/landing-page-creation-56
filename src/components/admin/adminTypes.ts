@@ -77,7 +77,7 @@ export const STATUS_LABELS: Record<string, string> = {
   estimate: "Смета",
   contract: "Договор",
   payment: "Оплата",
-  live: "Эфир",
+  live: "Размещение",
   completed: "Завершена",
   lost: "Потеряна",
 };

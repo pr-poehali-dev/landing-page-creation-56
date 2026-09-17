@@ -14,8 +14,8 @@ STATUS_LABELS = {
     'estimate': 'Смета',
     'contract': 'Договор',
     'payment': 'Оплата',
-    'live': 'Эфир',
-    'done': 'Завершена',
+    'live': 'Размещение',
+    'completed': 'Завершена',
     'lost': 'Потеряна',
 }
 
