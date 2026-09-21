@@ -91,7 +91,7 @@ export default function CalculatorHowFaq({ onApply }: CalculatorHowFaqProps) {
                 <div className="fb-crow"><span>Размещение, {days} дн. × {dur}″</span><b>{fmt(calc.placement)}</b></div>
                 <div className="fb-crow"><span>Выходов ролика на экране</span><b>{calc.outputs.toLocaleString("ru-RU")}</b></div>
                 <div className="fb-crow"><span>Потенциальных контактов</span><b>~{calc.contacts.toLocaleString("ru-RU")}</b></div>
-                <div className="fb-crow fb-cpt"><span>Цена 1000 контактов</span><b>~{Math.round(calc.cpt)} ₽</b></div>
+                <div className="fb-crow fb-cpt"><span>Цена 1000 показов</span><b>~{Math.round(calc.cpt)} ₽</b></div>
               </div>
               <div className="fb-ctotal" style={{ flex: 1 }} />
               <div className="fb-ctotal">
