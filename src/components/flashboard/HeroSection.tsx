@@ -89,7 +89,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
         <div className="fb-wrap">
           <div>
             <div className="fb-badge">📍 ТЦ «Изумруд Плаза» · Океанский пр-т, 16а</div>
-            <h1>Вашу рекламу увидят до <span className="fb-grad"><CountUp target={40000} />{" "}человек</span> каждый день</h1>
+            <h1>Вашу рекламу увидят <span className="fb-grad"><CountUp target={30000} format={(n) => n.toLocaleString("ru-RU") + "+"} />{" "}человек</span> каждый день</h1>
             <p className="fb-sub">LED-экран 50 м² над входом в ТЦ «Изумруд Плаза». <b>Запуск за 1 день.</b></p>
             <div className="fb-cta">
               <a className="fb-btn" href="#lead">Разместить рекламу — от 1 625 ₽/день</a>
@@ -98,7 +98,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
             <div className="fb-stats">
               <div className="fb-stat">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                <div className="fb-v"><CountUp target={40000} /></div>
+                <div className="fb-v"><CountUp target={30000} format={(n) => n.toLocaleString("ru-RU") + "+"} /></div>
                 <div className="fb-l">контактов в сутки</div>
               </div>
               <div className="fb-stat">
