@@ -253,7 +253,6 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
             <div className="fb-req">
               {COMPANY.full}
               <br />ИНН {COMPANY.inn}
-              <br />{COMPANY.address}
             </div>
             <div className="fb-legal-links">
               <Link to="/privacy">Политика конфиденциальности</Link>

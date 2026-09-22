@@ -23,8 +23,7 @@ export default function Privacy() {
             от 27.07.2006 № 152-ФЗ «О персональных данных».
           </p>
           <p>
-            Оператор персональных данных: {COMPANY.full} (далее — Оператор),
-            ИНН {COMPANY.inn}, адрес: {COMPANY.address}.
+            Оператор персональных данных: {COMPANY.full} (далее — Оператор), ИНН {COMPANY.inn}.
             Контактный адрес электронной почты: <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>.
           </p>
           <p>
@@ -139,7 +138,6 @@ export default function Privacy() {
           <p>
             {COMPANY.full}
             <br />ИНН {COMPANY.inn}
-            <br />Адрес: {COMPANY.address}
             <br />Телефон: <a href={COMPANY.phoneHref}>{COMPANY.phone}</a>
             <br />E-mail: <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>
           </p>
