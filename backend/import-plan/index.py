@@ -1,6 +1,9 @@
 import json
 import os
+import base64
+import zlib
 import psycopg2
+from plan_data import PACKED
 
 REVENUE = {
     2023: {8: 450000, 9: 972000, 10: 1159000, 11: 1555900, 12: 2182925},
@@ -35,9 +38,7 @@ def handler(event: dict, context) -> dict:
         return {'statusCode': 403, 'headers': {**cors, 'Content-Type': 'application/json'},
                 'body': json.dumps({'error': 'Доступ запрещён'}, ensure_ascii=False)}
 
-    here = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(here, 'data.json'), encoding='utf-8') as f:
-        rows = json.load(f)
+    rows = json.loads(zlib.decompress(base64.b64decode(PACKED)).decode('utf-8'))
 
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
     cur = conn.cursor()

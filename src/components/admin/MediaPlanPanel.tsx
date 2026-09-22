@@ -54,7 +54,11 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
         headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
         body: "{}",
       });
-      if (!res.ok) throw new Error("Импорт не удался");
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || `Импорт не удался (код ${res.status})`);
+      if (json.skipped) {
+        setError(`Данные уже перенесены ранее: ${json.existing} размещений`);
+      }
       await load(period.year, period.month);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ошибка импорта");
