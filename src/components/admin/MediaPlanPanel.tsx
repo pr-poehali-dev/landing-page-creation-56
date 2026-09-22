@@ -45,19 +45,24 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
     if (open) load(period.year, period.month);
   }, [open, period, load]);
 
-  async function runImport() {
+  async function runImport(syncLeads = false) {
     setImporting(true);
     setError("");
     try {
       const res = await fetch(func2url["import-plan"], {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
-        body: "{}",
+        body: JSON.stringify(syncLeads ? { syncLeads: true } : {}),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || `Импорт не удался (код ${res.status})`);
       if (json.skipped) {
         setError(`Данные уже перенесены ранее: ${json.existing} размещений`);
+      }
+      if (json.syncedLeads !== undefined) {
+        setError(json.syncedLeads > 0
+          ? `Синхронизировано сделок: ${json.syncedLeads}`
+          : "Нет сделок со статусом «Договор» и позже с заполненными датами");
       }
       await load(period.year, period.month);
     } catch (e) {
@@ -129,6 +134,15 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
               </button>
             </div>
             <button
+              onClick={() => runImport(true)}
+              disabled={importing}
+              title="Подтянуть в медиаплан сделки из заявок"
+              className="text-xs text-slate-500 hover:text-indigo-700 transition flex items-center gap-1 border border-slate-200 rounded-lg px-3 py-2 disabled:opacity-50"
+            >
+              <Icon name="RefreshCw" size={14} />
+              {importing ? "Обновляем…" : "Из сделок"}
+            </button>
+            <button
               onClick={() => exportExcel(false)}
               disabled={exporting}
               className="text-xs text-slate-500 hover:text-emerald-700 transition flex items-center gap-1 border border-slate-200 rounded-lg px-3 py-2 disabled:opacity-50"
@@ -169,7 +183,7 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
                 Можно перенести данные из вашего Excel-файла за 2026 год одним нажатием
               </div>
               <button
-                onClick={runImport}
+                onClick={() => runImport(false)}
                 disabled={importing}
                 className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition disabled:opacity-50"
               >

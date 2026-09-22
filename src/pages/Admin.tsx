@@ -568,6 +568,7 @@ const Admin = () => {
           onSave={() => editingTermsId !== null && saveDealTerms(editingTermsId)}
           onCancel={() => setEditingTermsId(null)}
           saving={savingTerms}
+          leadStatus={termsLead?.status}
         />
       </AdminModal>
     </div>

@@ -40,6 +40,12 @@ export default function PlanTable({ items, daysInMonth, capacity, load }: PlanTa
                 <div className="font-medium text-slate-900 truncate max-w-[170px]" title={it.brand}>
                   {it.brand}
                 </div>
+                {!!it.leadId && (
+                  <div className="text-[10px] text-emerald-600 flex items-center gap-0.5">
+                    <Icon name="Link2" size={9} />
+                    из сделки
+                  </div>
+                )}
                 {it.agency && (
                   <div className="text-[10px] text-violet-600 truncate max-w-[170px] flex items-center gap-0.5">
                     <Icon name="Building2" size={9} />

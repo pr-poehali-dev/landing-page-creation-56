@@ -8,12 +8,13 @@ interface DealTermsFormProps {
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
+  leadStatus?: string;
 }
 
 const inputCls =
   "w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-400";
 
-export default function DealTermsForm({ form, setForm, onSave, onCancel, saving }: DealTermsFormProps) {
+export default function DealTermsForm({ form, setForm, onSave, onCancel, saving, leadStatus }: DealTermsFormProps) {
   const total = Number(form.totalPrice) || 0;
   const video = Number(form.videoAmount) || 0;
   const placement = Math.max(total - (form.needVideo ? video : 0), 0);
@@ -118,6 +119,16 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving 
             В документах: размещение {placement.toLocaleString("ru-RU")} ₽
             {form.needVideo && video > 0 && <> · ролик {video.toLocaleString("ru-RU")} ₽</>}
             {" "}· итого {total.toLocaleString("ru-RU")} ₽
+          </div>
+        )}
+
+        {form.startDate && form.endDate && Number(form.duration) > 0 && (
+          <div className="sm:col-span-2 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2 text-xs text-indigo-900">
+            {leadStatus && ["contract", "payment", "live", "completed"].includes(leadStatus) ? (
+              <>Ролик встанет в медиаплан: {form.duration} сек в день с {form.startDate.split("-").reverse().join(".")} по {form.endDate.split("-").reverse().join(".")}</>
+            ) : (
+              <>Чтобы ролик попал в медиаплан и занял секунды на экране, переведите сделку в статус «Договор» или дальше</>
+            )}
           </div>
         )}
 

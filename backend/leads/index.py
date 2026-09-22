@@ -1,6 +1,7 @@
 import json
 import os
-from datetime import datetime
+import calendar
+from datetime import datetime, date, timedelta
 import psycopg2
 
 STATUS_LABELS = {
@@ -15,6 +16,75 @@ def log_event(cur, lead_id, event_type, details):
         f"INSERT INTO lead_events (lead_id, event_type, details) "
         f"VALUES ({int(lead_id)}, '{event_type}', '{text}')"
     )
+
+
+PLAN_STATUSES = ('contract', 'payment', 'live', 'completed')
+
+
+def esc_sql(v):
+    if v is None or v == '':
+        return 'NULL'
+    return "'" + str(v).replace("'", "''") + "'"
+
+
+def sync_placements(cur, lead_id):
+    """Пересобирает строки медиаплана для сделки по её условиям размещения"""
+    cur.execute(
+        "SELECT name, company, status, start_date, end_date, duration, "
+        "placement_amount, total_price, paid_amount "
+        f"FROM leads WHERE id = {int(lead_id)}"
+    )
+    row = cur.fetchone()
+    cur.execute(f"DELETE FROM placements WHERE lead_id = {int(lead_id)}")
+
+    if not row:
+        return 0
+
+    name, company, status, start, end, duration, placement_amount, total_price, paid = row
+    if status not in PLAN_STATUSES or not start or not end or end < start:
+        return 0
+
+    brand = (company or name or '').strip()[:250]
+    if not brand:
+        return 0
+
+    dur = int(duration or 0)
+    amount_total = int(placement_amount or total_price or 0)
+    days_total = (end - start).days + 1
+    pay_type = 'paid' if (total_price and paid and paid >= total_price) else 'unpaid'
+
+    period_text = f"{start.strftime('%d.%m.%Y')}-{end.strftime('%d.%m.%Y')}"
+
+    created = 0
+    cur_month = date(start.year, start.month, 1)
+    while cur_month <= end:
+        days_in_month = calendar.monthrange(cur_month.year, cur_month.month)[1]
+        m_end = date(cur_month.year, cur_month.month, days_in_month)
+        seg_from = start if start > cur_month else cur_month
+        seg_to = end if end < m_end else m_end
+        seg_days = (seg_to - seg_from).days + 1
+
+        secs = [0] * days_in_month
+        for d in range(seg_from.day, seg_to.day + 1):
+            secs[d - 1] = dur
+        sec_str = ','.join(str(x) for x in secs)
+
+        amount_month = round(amount_total / days_total * seg_days) if days_total else 0
+
+        cur.execute(
+            "INSERT INTO placements (lead_id, plan_year, plan_month, brand, legal_entity, "
+            "payment_type, video_status, duration_sec, period_text, start_day, end_day, "
+            "days_count, price_total, amount_month, day_seconds) VALUES ("
+            f"{int(lead_id)}, {cur_month.year}, {cur_month.month}, {esc_sql(brand)}, "
+            f"{esc_sql(company)}, '{pay_type}', 'ready', {dur}, {esc_sql(period_text)}, "
+            f"{seg_from.day}, {seg_to.day}, {seg_days}, {amount_total}, {amount_month}, "
+            f"{esc_sql(sec_str)})"
+        )
+        created += 1
+        cur_month = date(cur_month.year + (cur_month.month == 12),
+                         (cur_month.month % 12) + 1, 1)
+
+    return created
 
 
 def handler(event: dict, context) -> dict:
@@ -445,6 +515,17 @@ def handler(event: dict, context) -> dict:
                       f"График платежей: {len(rows_to_save)} платеж(ей) на " +
                       f"{plan_total:,}".replace(',', ' ') + " ₽")
 
+        plan_touched = any(
+            c.startswith(('start_date', 'end_date', 'duration', 'status', 'placement_amount',
+                          'total_price', 'paid_amount', 'company'))
+            for c in set_clauses
+        )
+        if plan_touched:
+            months = sync_placements(cur, lead_id)
+            if months > 0:
+                log_event(cur, lead_id, 'mediaplan',
+                          f"Ролик в медиаплане: {months} мес.")
+
         conn.commit()
         cur.close()
         conn.close()
@@ -486,6 +567,7 @@ def handler(event: dict, context) -> dict:
                 cur.execute(f"DELETE FROM lead_events WHERE lead_id IN ({id_list})")
                 cur.execute(f"DELETE FROM lead_documents WHERE lead_id IN ({id_list})")
                 cur.execute(f"DELETE FROM lead_payments WHERE lead_id IN ({id_list})")
+                cur.execute(f"DELETE FROM placements WHERE lead_id IN ({id_list})")
                 cur.execute(f"DELETE FROM leads WHERE id IN ({id_list})")
                 conn.commit()
             cur.close()
@@ -501,6 +583,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(f"DELETE FROM lead_events WHERE lead_id = {int(lead_id)}")
             cur.execute(f"DELETE FROM lead_documents WHERE lead_id = {int(lead_id)}")
             cur.execute(f"DELETE FROM lead_payments WHERE lead_id = {int(lead_id)}")
+            cur.execute(f"DELETE FROM placements WHERE lead_id = {int(lead_id)}")
             cur.execute(f"DELETE FROM leads WHERE id = {int(lead_id)}")
             conn.commit()
             cur.close()
