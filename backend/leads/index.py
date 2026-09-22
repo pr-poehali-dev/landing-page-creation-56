@@ -302,8 +302,8 @@ def handler(event: dict, context) -> dict:
 
         leads = [{
             'id': r[0], 'name': r[1],
-            'phone': r[2] if (reveal == r[0] or not viewer) else mask_phone(r[2]),
-            'phoneHidden': not (reveal == r[0] or not viewer),
+            'phone': r[2],
+            'phoneHidden': False,
             'comment': r[3],
             'duration': r[4], 'days': r[5], 'needVideo': r[6], 'totalPrice': r[7],
             'source': r[8], 'status': r[9],
