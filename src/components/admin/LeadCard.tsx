@@ -1,9 +1,10 @@
 import Icon from "@/components/ui/icon";
-import { Lead, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
+import { Lead, LeadPayment, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 import LeadReadiness from "./LeadReadiness";
 import SendDocButton from "./SendDocButton";
 import LeadHistory from "./LeadHistory";
 import ConsentBadge from "./ConsentBadge";
+import PaymentSchedule from "./PaymentSchedule";
 
 interface LeadCardProps {
   lead: Lead;
@@ -21,6 +22,7 @@ interface LeadCardProps {
   generateContract: (id: number) => void;
   generatingId: number | null;
   contractError: Record<number, string>;
+  savePayments: (leadId: number, rows: LeadPayment[]) => Promise<void>;
   deleteDocument: (leadId: number, docId: number | null) => void;
   openDealTerms: (l: Lead) => void;
   confirmDeleteId: number | null;
@@ -44,6 +46,7 @@ export default function LeadCard({
   generateContract,
   generatingId,
   contractError,
+  savePayments,
   deleteDocument,
   openDealTerms,
   confirmDeleteId,
@@ -185,6 +188,8 @@ export default function LeadCard({
           {l.bankAccount && <div>Р/с {l.bankAccount}{l.bankBik ? ` · БИК ${l.bankBik}` : ""}</div>}
         </div>
       )}
+
+      <PaymentSchedule lead={l} savePayments={savePayments} />
 
       <ConsentBadge lead={l} formatDate={formatDate} />
 

@@ -15,6 +15,7 @@ import DealTermsForm from "@/components/admin/DealTermsForm";
 import {
   Lead,
   LeadDocument,
+  LeadPayment,
   Requisites,
   EMPTY_REQUISITES,
   DealTerms,
@@ -354,6 +355,26 @@ const Admin = () => {
     }
   }
 
+  async function savePayments(leadId: number, rows: LeadPayment[]) {
+    const res = await fetch(func2url.leads, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+      body: JSON.stringify({ id: leadId, payments: rows }),
+    });
+    if (!res.ok) throw new Error("Не удалось сохранить график");
+    const data = await res.json();
+    const paidAmount = rows.filter(r => r.isPaid).reduce((s, r) => s + r.amount, 0);
+    setLeads(prev => prev.map(l => {
+      if (l.id !== leadId) return l;
+      const updated = { ...l, payments: rows, paidAmount, status: data.status ?? l.status };
+      return withEvent(
+        updated,
+        "schedule",
+        `График платежей: ${rows.length} платеж(ей) на ${rows.reduce((s, r) => s + r.amount, 0).toLocaleString("ru-RU")} ₽`
+      );
+    }));
+  }
+
   function openPaidEdit(l: Lead) {
     setEditingPaidId(l.id);
     setPaidInput(l.paidAmount ? String(l.paidAmount) : "");
@@ -469,6 +490,7 @@ const Admin = () => {
                 generateContract={generateContract}
                 generatingId={generatingId}
                 contractError={contractError}
+                savePayments={savePayments}
                 deleteDocument={deleteDocument}
                 openDealTerms={openDealTerms}
                 confirmDeleteId={confirmDeleteId}

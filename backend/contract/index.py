@@ -28,6 +28,33 @@ def fmt_date(dt):
     return f"{d:02d}.{m:02d}.{y}"
 
 
+def money(v):
+    return f"{int(v):,}".replace(",", " ")
+
+
+def build_payment_text(payments, start_dt, end_dt, placement_amount):
+    period = ""
+    if start_dt and end_dt:
+        period = f" Период размещения: с {fmt_date(start_dt)} по {fmt_date(end_dt)}."
+
+    if not payments:
+        return ("3. Оплата услуг по настоящему Приложению производится Заказчиком "
+                "на основании настоящего Приложения." + period)
+
+    parts = [f"3. Оплата услуг по настоящему Приложению производится Заказчиком "
+             f"в следующем порядке:{period} "]
+    for i, p in enumerate(payments, 1):
+        note = f" ({p['comment']})" if p.get('comment') else ""
+        parts.append(
+            f"{i}) {money(p['amount'])} рублей — в срок до {fmt_date(parse_date(p['due_date']))}{note}; "
+        )
+    total = sum(p['amount'] for p in payments)
+    parts.append(f"Итого: {money(total)} рублей, НДС не предусмотрен.")
+    if placement_amount and total != placement_amount:
+        parts.append(f" Общая стоимость размещения: {money(placement_amount)} рублей.")
+    return ''.join(parts)
+
+
 def build_requisites_text(lead):
     lines = []
     company = lead.get('company') or lead.get('name') or ''
@@ -93,6 +120,13 @@ def fill_contract(lead, contract_no, sign_dt):
     p[74].runs[7].text = customer_name
     p[76].runs[10].text = f"{duration} "
     p[79].runs[6].text = f"{placement_amount:,}".replace(",", " ")
+
+    # --- Пункт 3: график платежей ---
+    pay_para = p[81]
+    pay_text = build_payment_text(lead.get('payments') or [], start_dt, end_dt, placement_amount)
+    for extra in pay_para.runs[1:]:
+        extra.text = ""
+    pay_para.runs[0].text = pay_text
 
     # --- Таблица реквизитов ---
     t0 = doc.tables[0]
@@ -182,6 +216,11 @@ def handler(event: dict, context) -> dict:
         f"FROM leads WHERE id = {int(lead_id)}"
     )
     row = cur.fetchone()
+    cur.execute(
+        "SELECT due_date, amount, comment FROM lead_payments "
+        f"WHERE lead_id = {int(lead_id)} ORDER BY sort_order, due_date"
+    )
+    payment_rows = cur.fetchall()
     cur.close()
     conn.close()
 
@@ -201,7 +240,11 @@ def handler(event: dict, context) -> dict:
         'placement_amount': row[7],
         'inn': row[8], 'kpp': row[9], 'ogrn': row[10], 'legal_address': row[11],
         'bank_name': row[12], 'bank_account': row[13], 'bank_bik': row[14], 'bank_corr_account': row[15],
-        'signer_name': row[16], 'signer_position': row[17]
+        'signer_name': row[16], 'signer_position': row[17],
+        'payments': [
+            {'due_date': pr[0].isoformat(), 'amount': pr[1], 'comment': pr[2]}
+            for pr in payment_rows
+        ]
     }
 
     if not lead.get('inn') and not lead.get('legal_address'):

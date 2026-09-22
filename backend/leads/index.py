@@ -164,7 +164,7 @@ def handler(event: dict, context) -> dict:
             'consentAt': r[28].isoformat() if r[28] else None,
             'consentIp': r[29],
             'consentText': r[30],
-            'documents': [], 'events': []
+            'documents': [], 'events': [], 'payments': []
         } for r in rows]
 
         cur.execute(
@@ -193,6 +193,24 @@ def handler(event: dict, context) -> dict:
             })
         for lead in leads:
             lead['events'] = events_by_lead.get(lead['id'], [])
+
+        cur.execute(
+            "SELECT id, lead_id, due_date, amount, comment, is_paid, paid_at, sort_order "
+            "FROM lead_payments ORDER BY lead_id, sort_order, due_date"
+        )
+        pays_by_lead = {}
+        for pr in cur.fetchall():
+            pays_by_lead.setdefault(pr[1], []).append({
+                'id': pr[0],
+                'dueDate': pr[2].isoformat() if pr[2] else None,
+                'amount': pr[3],
+                'comment': pr[4],
+                'isPaid': pr[5],
+                'paidAt': pr[6].isoformat() if pr[6] else None,
+                'sortOrder': pr[7],
+            })
+        for lead in leads:
+            lead['payments'] = pays_by_lead.get(lead['id'], [])
 
         cur.close()
         conn.close()
@@ -355,6 +373,41 @@ def handler(event: dict, context) -> dict:
                     if total_price and paid_val >= total_price and current_status not in ('live', 'completed', 'lost', 'payment'):
                         set_clauses.append("status = 'payment'")
 
+        payments_in = body.get('payments')
+        payments_changed = False
+        if isinstance(payments_in, list):
+            rows_to_save = []
+            for idx, item in enumerate(payments_in[:24]):
+                raw_date = str((item or {}).get('dueDate') or '')[:10]
+                try:
+                    datetime.strptime(raw_date, '%Y-%m-%d')
+                except ValueError:
+                    continue
+                try:
+                    amount = max(int((item or {}).get('amount') or 0), 0)
+                except (TypeError, ValueError):
+                    amount = 0
+                if amount <= 0:
+                    continue
+                note = str((item or {}).get('comment') or '')[:255].replace("'", "''")
+                is_paid = bool((item or {}).get('isPaid'))
+                rows_to_save.append((raw_date, amount, note, is_paid, idx))
+
+            cur.execute(f"DELETE FROM lead_payments WHERE lead_id = {int(lead_id)}")
+            for raw_date, amount, note, is_paid, idx in rows_to_save:
+                note_val = f"'{note}'" if note else 'NULL'
+                paid_at_val = 'CURRENT_TIMESTAMP' if is_paid else 'NULL'
+                cur.execute(
+                    f"INSERT INTO lead_payments (lead_id, due_date, amount, comment, is_paid, paid_at, sort_order) "
+                    f"VALUES ({int(lead_id)}, '{raw_date}', {amount}, {note_val}, "
+                    f"{'TRUE' if is_paid else 'FALSE'}, {paid_at_val}, {idx})"
+                )
+
+            payments_changed = True
+            paid_total = sum(r[1] for r in rows_to_save if r[3])
+            set_clauses = [c for c in set_clauses if not c.startswith('paid_amount =')]
+            set_clauses.append(f"paid_amount = {paid_total}")
+
         if not set_clauses:
             cur.close()
             conn.close()
@@ -385,6 +438,12 @@ def handler(event: dict, context) -> dict:
 
         if any(c.startswith(('total_price', 'start_date', 'end_date', 'duration', 'days', 'placement_amount', 'video_amount')) for c in set_clauses):
             log_event(cur, lead_id, 'terms', 'Условия размещения обновлены')
+
+        if payments_changed:
+            plan_total = sum(r[1] for r in rows_to_save)
+            log_event(cur, lead_id, 'schedule',
+                      f"График платежей: {len(rows_to_save)} платеж(ей) на " +
+                      f"{plan_total:,}".replace(',', ' ') + " ₽")
 
         conn.commit()
         cur.close()
@@ -419,6 +478,7 @@ def handler(event: dict, context) -> dict:
         if lead_id:
             cur.execute(f"DELETE FROM lead_events WHERE lead_id = {int(lead_id)}")
             cur.execute(f"DELETE FROM lead_documents WHERE lead_id = {int(lead_id)}")
+            cur.execute(f"DELETE FROM lead_payments WHERE lead_id = {int(lead_id)}")
             cur.execute(f"DELETE FROM leads WHERE id = {int(lead_id)}")
             conn.commit()
             cur.close()

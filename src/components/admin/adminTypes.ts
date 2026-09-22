@@ -32,6 +32,16 @@ export interface Lead {
   consentText: string | null;
   documents: LeadDocument[];
   events: LeadEvent[];
+  payments: LeadPayment[];
+}
+
+export interface LeadPayment {
+  id: number | null;
+  dueDate: string;
+  amount: number;
+  comment: string | null;
+  isPaid: boolean;
+  paidAt: string | null;
 }
 
 export interface LeadEvent {
