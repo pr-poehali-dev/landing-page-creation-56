@@ -20,13 +20,7 @@ interface LeadCardProps {
   openRequisites: (l: Lead) => void;
   generateContract: (id: number) => void;
   generatingId: number | null;
-  generateInvoice: (id: number) => void;
-  invoiceGeneratingId: number | null;
-  generateAct: (id: number) => void;
-  actGeneratingId: number | null;
   contractError: Record<number, string>;
-  invoiceError: Record<number, string>;
-  actError: Record<number, string>;
   deleteDocument: (leadId: number, docId: number | null) => void;
   openDealTerms: (l: Lead) => void;
   confirmDeleteId: number | null;
@@ -49,13 +43,7 @@ export default function LeadCard({
   openRequisites,
   generateContract,
   generatingId,
-  generateInvoice,
-  invoiceGeneratingId,
-  generateAct,
-  actGeneratingId,
   contractError,
-  invoiceError,
-  actError,
   deleteDocument,
   openDealTerms,
   confirmDeleteId,
@@ -228,28 +216,8 @@ export default function LeadCard({
           <Icon name="FileSignature" size={15} />
           {generatingId === l.id ? "Формируем…" : "Сформировать договор"}
         </button>
-        <button
-          onClick={() => generateInvoice(l.id)}
-          disabled={invoiceGeneratingId === l.id || !l.totalPrice}
-          title={!l.totalPrice ? "Укажите стоимость размещения — без неё счёт не сформировать" : ""}
-          className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <Icon name="Receipt" size={15} />
-          {invoiceGeneratingId === l.id ? "Формируем…" : "Выставить счёт"}
-        </button>
-        <button
-          onClick={() => generateAct(l.id)}
-          disabled={actGeneratingId === l.id || !l.totalPrice}
-          title={!l.totalPrice ? "Укажите стоимость размещения — без неё акт не сформировать" : ""}
-          className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <Icon name="ClipboardCheck" size={15} />
-          {actGeneratingId === l.id ? "Формируем…" : "Сформировать акт"}
-        </button>
       </div>
       {contractError[l.id] && <div className="text-red-600 text-xs mt-2">{contractError[l.id]}</div>}
-      {invoiceError[l.id] && <div className="text-red-600 text-xs mt-2">{invoiceError[l.id]}</div>}
-      {actError[l.id] && <div className="text-red-600 text-xs mt-2">{actError[l.id]}</div>}
 
       {l.documents.length > 0 && (
         <div className="mt-3 bg-slate-50 rounded-lg p-3">

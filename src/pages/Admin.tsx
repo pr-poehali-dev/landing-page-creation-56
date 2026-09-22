@@ -48,10 +48,6 @@ const Admin = () => {
   const [savingReq, setSavingReq] = useState(false);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
   const [contractError, setContractError] = useState<Record<number, string>>({});
-  const [invoiceGeneratingId, setInvoiceGeneratingId] = useState<number | null>(null);
-  const [invoiceError, setInvoiceError] = useState<Record<number, string>>({});
-  const [actGeneratingId, setActGeneratingId] = useState<number | null>(null);
-  const [actError, setActError] = useState<Record<number, string>>({});
   const [editingTermsId, setEditingTermsId] = useState<number | null>(null);
   const [termsForm, setTermsForm] = useState<DealTerms>(EMPTY_DEAL_TERMS);
   const [savingTerms, setSavingTerms] = useState(false);
@@ -309,48 +305,6 @@ const Admin = () => {
     }
   }
 
-  async function generateInvoice(id: number) {
-    setInvoiceGeneratingId(id);
-    setInvoiceError(prev => ({ ...prev, [id]: "" }));
-    try {
-      const res = await fetch(func2url.invoice, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
-        body: JSON.stringify({ leadId: id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "fail");
-      window.open(data.url, "_blank");
-      const newDoc: LeadDocument = { id: data.docId ?? null, type: "invoice", url: data.url, no: null, createdAt: new Date().toISOString() };
-      setLeads(prev => prev.map(l => (l.id === id ? withEvent({ ...l, documents: [newDoc, ...l.documents] }, "document", docEventLabel(newDoc)) : l)));
-    } catch (e) {
-      setInvoiceError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать счёт" }));
-    } finally {
-      setInvoiceGeneratingId(null);
-    }
-  }
-
-  async function generateAct(id: number) {
-    setActGeneratingId(id);
-    setActError(prev => ({ ...prev, [id]: "" }));
-    try {
-      const res = await fetch(func2url.act, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
-        body: JSON.stringify({ leadId: id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "fail");
-      window.open(data.url, "_blank");
-      const newDoc: LeadDocument = { id: data.docId ?? null, type: "act", url: data.url, no: null, createdAt: new Date().toISOString() };
-      setLeads(prev => prev.map(l => (l.id === id ? withEvent({ ...l, documents: [newDoc, ...l.documents] }, "document", docEventLabel(newDoc)) : l)));
-    } catch (e) {
-      setActError(prev => ({ ...prev, [id]: e instanceof Error ? e.message : "Не удалось сформировать акт" }));
-    } finally {
-      setActGeneratingId(null);
-    }
-  }
-
   async function deleteDocument(leadId: number, docId: number | null) {
     if (!docId) return;
     setLeads(prev => prev.map(l => (l.id === leadId ? { ...l, documents: l.documents.filter(d => d.id !== docId) } : l)));
@@ -514,13 +468,7 @@ const Admin = () => {
                 openRequisites={openRequisites}
                 generateContract={generateContract}
                 generatingId={generatingId}
-                generateInvoice={generateInvoice}
-                invoiceGeneratingId={invoiceGeneratingId}
-                generateAct={generateAct}
-                actGeneratingId={actGeneratingId}
                 contractError={contractError}
-                invoiceError={invoiceError}
-                actError={actError}
                 deleteDocument={deleteDocument}
                 openDealTerms={openDealTerms}
                 confirmDeleteId={confirmDeleteId}

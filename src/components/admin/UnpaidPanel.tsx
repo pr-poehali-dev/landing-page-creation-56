@@ -15,8 +15,9 @@ interface DebtRow {
   paid: number;
   total: number;
   days: number;
-  invoiceNo: string | null;
-  invoiceUrl: string;
+  docNo: string | null;
+  docUrl: string | null;
+  fromDoc: boolean;
 }
 
 function daysSince(iso: string): number {
@@ -50,12 +51,14 @@ export default function UnpaidPanel({ leads, onOpenLead }: UnpaidPanelProps) {
       const debt = total - paid;
       if (total <= 0 || debt <= 0) return;
 
-      const invoices = l.documents
-        .filter(d => d.type === "invoice" && d.createdAt)
+      const contracts = l.documents
+        .filter(d => d.type === "contract" && d.createdAt)
         .sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime());
-      if (invoices.length === 0) return;
 
-      const first = invoices[0];
+      const first = contracts[0] || null;
+      const since = first?.createdAt || l.createdAt;
+      if (!since) return;
+
       result.push({
         id: l.id,
         client: l.company || l.name,
@@ -63,9 +66,10 @@ export default function UnpaidPanel({ leads, onOpenLead }: UnpaidPanelProps) {
         debt,
         paid,
         total,
-        days: daysSince(first.createdAt!),
-        invoiceNo: first.no,
-        invoiceUrl: first.url,
+        days: daysSince(since),
+        docNo: first?.no || null,
+        docUrl: first?.url || null,
+        fromDoc: Boolean(first),
       });
     });
     return result.sort((a, b) => b.days - a.days);
@@ -121,7 +125,7 @@ export default function UnpaidPanel({ leads, onOpenLead }: UnpaidPanelProps) {
                           : "bg-slate-100 text-slate-600"
                     }`}
                   >
-                    Счёт{r.invoiceNo ? ` № ${r.invoiceNo}` : ""} — {daysLabel(r.days)}
+                    {r.fromDoc ? `Договор${r.docNo ? ` № ${r.docNo}` : ""}` : "Заявка"} — {daysLabel(r.days)}
                   </span>
                   <span className="text-slate-400">{STATUS_LABELS[r.status] || r.status}</span>
                   {r.paid > 0 && (
@@ -138,15 +142,17 @@ export default function UnpaidPanel({ leads, onOpenLead }: UnpaidPanelProps) {
                     {r.debt.toLocaleString("ru-RU")} ₽
                   </div>
                 </div>
-                <a
-                  href={r.invoiceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="Открыть счёт"
-                  className="text-slate-400 hover:text-rose-600 transition p-1.5"
-                >
-                  <Icon name="Receipt" size={16} />
-                </a>
+                {r.docUrl && (
+                  <a
+                    href={r.docUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Открыть договор"
+                    className="text-slate-400 hover:text-rose-600 transition p-1.5"
+                  >
+                    <Icon name="FileSignature" size={16} />
+                  </a>
+                )}
               </div>
             </div>
           );

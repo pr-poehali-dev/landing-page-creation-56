@@ -81,7 +81,7 @@ export default function RequisitesForm({ form, setForm, onSave, onCancel, saving
 
       {errorCount > 0 && (
         <div className="sm:col-span-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          Проверьте отмеченные поля — данные попадут в договор и счёт в таком виде.
+          Проверьте отмеченные поля — данные попадут в договор в таком виде.
         </div>
       )}
 

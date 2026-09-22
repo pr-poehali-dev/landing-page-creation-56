@@ -70,7 +70,7 @@ export function getMissingFields(l: Lead): MissingField[] {
     missing.push({ label: "реквизиты клиента: ИНН или юридический адрес", docs: ["договор"], inRequisites: true });
   }
   if (!l.company) {
-    missing.push({ label: "название организации", docs: ["договор", "счёт", "акт"], inRequisites: true });
+    missing.push({ label: "название организации", docs: ["договор"], inRequisites: true });
   }
   if (l.inn && !l.bankAccount) {
     missing.push({ label: "банковские реквизиты", docs: ["договор"], inRequisites: true });
@@ -79,7 +79,7 @@ export function getMissingFields(l: Lead): MissingField[] {
     missing.push({ label: "подписант со стороны клиента", docs: ["договор"], inRequisites: true });
   }
   if (!l.totalPrice) {
-    missing.push({ label: "стоимость размещения", docs: ["договор", "счёт", "акт"], inRequisites: false });
+    missing.push({ label: "стоимость размещения", docs: ["договор"], inRequisites: false });
   }
   if (!l.startDate || !l.endDate) {
     missing.push({ label: "сроки размещения", docs: ["договор"], inRequisites: false });
