@@ -1,5 +1,6 @@
-import { DealTerms } from "./adminTypes";
+import { DealTerms, LeadPayment } from "./adminTypes";
 import { syncPeriod, periodConflict } from "./dealDates";
+import PaymentRowsEditor from "./PaymentRowsEditor";
 
 interface DealTermsFormProps {
   form: DealTerms;
@@ -119,6 +120,16 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving 
             {" "}· итого {total.toLocaleString("ru-RU")} ₽
           </div>
         )}
+
+        <div className="sm:col-span-2">
+          <PaymentRowsEditor
+            rows={form.payments}
+            setRows={(rows: LeadPayment[]) => setForm({ ...form, payments: rows })}
+            total={total}
+            startDate={form.startDate}
+            endDate={form.endDate}
+          />
+        </div>
 
         <div className="sm:col-span-2 flex gap-2 mt-1">
           <button

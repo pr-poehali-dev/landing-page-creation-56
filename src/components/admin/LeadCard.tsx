@@ -189,7 +189,7 @@ export default function LeadCard({
         </div>
       )}
 
-      <PaymentSchedule lead={l} savePayments={savePayments} />
+      <PaymentSchedule lead={l} savePayments={savePayments} openDealTerms={openDealTerms} />
 
       <ConsentBadge lead={l} formatDate={formatDate} />
 

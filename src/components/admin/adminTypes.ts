@@ -87,11 +87,12 @@ export interface DealTerms {
   endDate: string;
   needVideo: boolean;
   videoAmount: string;
+  payments: LeadPayment[];
 }
 
 export const EMPTY_DEAL_TERMS: DealTerms = {
   totalPrice: "", duration: "", days: "", startDate: "", endDate: "",
-  needVideo: false, videoAmount: "",
+  needVideo: false, videoAmount: "", payments: [],
 };
 
 export const STATUS_LABELS: Record<string, string> = {

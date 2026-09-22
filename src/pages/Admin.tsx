@@ -146,6 +146,7 @@ const Admin = () => {
       endDate: l.endDate ? l.endDate.slice(0, 10) : "",
       needVideo: l.needVideo,
       videoAmount: l.videoAmount != null ? String(l.videoAmount) : "",
+      payments: (l.payments || []).map(p => ({ ...p })),
     });
   }
 
@@ -171,6 +172,7 @@ const Admin = () => {
         needVideo: termsForm.needVideo,
         videoAmount: video,
         placementAmount: placement,
+        payments: termsForm.payments.filter(p => p.dueDate && p.amount > 0),
       };
 
       const res = await fetch(func2url.leads, {
@@ -194,6 +196,8 @@ const Admin = () => {
                 needVideo: payload.needVideo,
                 videoAmount: payload.videoAmount,
                 placementAmount: payload.placementAmount,
+                payments: payload.payments,
+                paidAmount: payload.payments.filter(p => p.isPaid).reduce((s, p) => s + p.amount, 0),
                 status: data.status || l.status,
               }
             : l
