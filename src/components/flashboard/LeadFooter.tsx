@@ -34,6 +34,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
   const [days, setDays] = useState("");
   const [startDate, setStartDate] = useState("");
   const [consent, setConsent] = useState(false);
+  const [policyAccepted, setPolicyAccepted] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -59,6 +60,10 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
     e.preventDefault();
     if (!consent) {
       setError("Отметьте согласие на обработку персональных данных");
+      return;
+    }
+    if (!policyAccepted) {
+      setError("Подтвердите, что ознакомились с политикой конфиденциальности");
       return;
     }
     if (phone.replace(/\D/g, "").length < 11) {
@@ -102,6 +107,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       setDays("");
       setStartDate("");
       setConsent(false);
+      setPolicyAccepted(false);
     } catch {
       setError("Не удалось отправить. Позвоните нам: +7 908 992 50 20");
     } finally {
@@ -219,15 +225,26 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                       onChange={e => { setConsent(e.target.checked); if (e.target.checked) setError(""); }}
                     />
                     <span>
-                      Я согласен на обработку моих персональных данных (имя, телефон) и принимаю{" "}
+                      Даю согласие на обработку моих персональных данных (имя, телефон) для связи со мной
+                      и подготовки коммерческого предложения.
+                    </span>
+                  </label>
+                  <label className="fb-consent">
+                    <input
+                      type="checkbox"
+                      checked={policyAccepted}
+                      onChange={e => { setPolicyAccepted(e.target.checked); if (e.target.checked) setError(""); }}
+                    />
+                    <span>
+                      Ознакомлен и согласен с{" "}
                       <button type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); setPrivacyOpen(true); }}>
-                        политику конфиденциальности
+                        политикой конфиденциальности
                       </button>
                       .
                     </span>
                   </label>
                   {error && <div className="fb-formerr">{error}</div>}
-                  <button type="submit" className="fb-btn" disabled={sending || !consent}>
+                  <button type="submit" className="fb-btn" disabled={sending || !consent || !policyAccepted}>
                     {sending ? "Отправляем…" : "Получить смету за 1 час →"}
                   </button>
                   <div className="fb-pp">Заявка сохранится у нас и продублируется в Telegram. Мы не передаём контакты третьим лицам.</div>
@@ -296,7 +313,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       <PrivacyModal
         open={privacyOpen}
         onClose={() => setPrivacyOpen(false)}
-        onAccept={() => { setConsent(true); setError(""); }}
+        onAccept={() => { setPolicyAccepted(true); setError(""); }}
       />
     </>
   );

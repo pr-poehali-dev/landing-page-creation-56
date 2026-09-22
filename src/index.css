@@ -2017,11 +2017,14 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 14px;
   font-size: 12.5px;
   line-height: 1.55;
   color: #64748b;
   cursor: pointer;
+}
+#flashboard-landing .fb-consent + .fb-consent {
+  margin-top: 10px;
 }
 #flashboard-landing .fb-consent input {
   width: 17px;
