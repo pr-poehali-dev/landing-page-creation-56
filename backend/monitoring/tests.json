@@ -1,0 +1,4 @@
+{"tests": [
+  {"name": "Список без пароля запрещён", "method": "GET", "path": "/", "expectedStatus": 403},
+  {"name": "OPTIONS возвращает 200", "method": "OPTIONS", "path": "/", "expectedStatus": 200}
+]}

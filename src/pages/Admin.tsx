@@ -10,6 +10,7 @@ import NewLeadForm from "@/components/admin/NewLeadForm";
 import TestDataPanel from "@/components/admin/TestDataPanel";
 import MediaPlanPanel from "@/components/admin/MediaPlanPanel";
 import ClientBasePanel from "@/components/admin/ClientBasePanel";
+import MonitoringPanel from "@/components/admin/MonitoringPanel";
 import AdminModal from "@/components/admin/AdminModal";
 import RequisitesForm from "@/components/admin/RequisitesForm";
 import DealTermsForm from "@/components/admin/DealTermsForm";
@@ -459,6 +460,7 @@ const Admin = () => {
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && <MediaPlanPanel adminKey={adminKey || ""} />}
         {!loading && <ClientBasePanel adminKey={adminKey || ""} onLeadCreated={fetchLeads} />}
+        {!loading && <MonitoringPanel adminKey={adminKey || ""} />}
         {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
