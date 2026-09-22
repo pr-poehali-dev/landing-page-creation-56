@@ -103,7 +103,7 @@ def handler(event: dict, context) -> dict:
     """Разовый импорт медиаплана из Excel-файла в базу: размещения по месяцам и факт выручки прошлых лет"""
     cors = {'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key'}
+            'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-Session-Token'}
 
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': cors, 'body': ''}

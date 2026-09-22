@@ -95,7 +95,7 @@ def handler(event: dict, context) -> dict:
     cors_headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-Session-Token',
         'Access-Control-Max-Age': '86400'
     }
 
