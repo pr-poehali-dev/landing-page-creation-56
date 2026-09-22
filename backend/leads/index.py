@@ -20,6 +20,78 @@ def log_event(cur, lead_id, event_type, details):
 
 PLAN_STATUSES = ('contract', 'payment', 'live', 'completed')
 
+TRASH_DAYS = 30
+
+
+def actor(event, cur):
+    """Определяет сотрудника по токену сессии"""
+    headers = event.get('headers') or {}
+    token = headers.get('X-Session-Token') or headers.get('x-session-token')
+    if not token:
+        return None
+    safe = str(token).replace("'", "''")
+    cur.execute(
+        "SELECT s.staff_id, st.name, st.role FROM staff_sessions s "
+        "JOIN staff st ON st.id = s.staff_id "
+        f"WHERE s.token = '{safe}' AND s.revoked = FALSE "
+        "AND s.expires_at > CURRENT_TIMESTAMP AND st.active = TRUE"
+    )
+    r = cur.fetchone()
+    return {'id': r[0], 'name': r[1], 'role': r[2]} if r else None
+
+
+def who_ip(event):
+    req = event.get('requestContext') or {}
+    ident = req.get('identity') or {}
+    raw = event.get('headers') or {}
+    fwd = raw.get('X-Forwarded-For') or raw.get('x-forwarded-for') or ''
+    return ((fwd.split(',')[0].strip() if fwd else '') or ident.get('sourceIp') or '')[:45]
+
+
+def allowed(event, cur):
+    """Пускает по мастер-паролю ИЛИ по активной сессии сотрудника"""
+    master = os.environ.get('ADMIN_KEY', '')
+    headers = event.get('headers') or {}
+    provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
+    if master and provided == master:
+        return True
+    return actor(event, cur) is not None
+
+
+def audit(cur, staff, event, action, entity=None, entity_id=None,
+          details=None, severity='info'):
+    name = staff['name'] if staff else None
+    sid = staff['id'] if staff else 'NULL'
+    text = str(details)[:580].replace("'", "''") if details else None
+    cur.execute(
+        "INSERT INTO audit_log (staff_id, staff_name, action, entity, entity_id, "
+        "details, ip, severity) VALUES ("
+        f"{sid}, {esc_sql(name)}, {esc_sql(action)}, {esc_sql(entity)}, "
+        f"{int(entity_id) if entity_id else 'NULL'}, "
+        f"{('NULL' if text is None else chr(39) + text + chr(39))}, "
+        f"{esc_sql(who_ip(event))}, {esc_sql(severity)})"
+    )
+
+
+def mask_phone(phone):
+    """Прячет середину номера: +7 (924) ***-**-95"""
+    if not phone:
+        return phone
+    digits = [c for c in str(phone) if c.isdigit()]
+    if len(digits) < 6:
+        return '***'
+    return f"+{digits[0]} ({''.join(digits[1:4])}) ***-**-{''.join(digits[-2:])}"
+
+
+def to_trash(cur, staff, entity, entity_id, title, payload):
+    blob = json.dumps(payload, ensure_ascii=False, default=str).replace("'", "''")
+    cur.execute(
+        "INSERT INTO trash_bin (entity, entity_id, title, payload, removed_by, restore_until) "
+        f"VALUES ({esc_sql(entity)}, {int(entity_id)}, {esc_sql(str(title)[:240])}, "
+        f"'{blob}', {esc_sql(staff['name'] if staff else None)}, "
+        f"CURRENT_DATE + {TRASH_DAYS})"
+    )
+
 
 def esc_sql(v):
     if v is None or v == '':
@@ -199,7 +271,7 @@ def handler(event: dict, context) -> dict:
         headers = event.get('headers', {})
         provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
 
-        if admin_key and provided != admin_key:
+        if not allowed(event, cur):
             cur.close()
             conn.close()
             return {
@@ -217,8 +289,22 @@ def handler(event: dict, context) -> dict:
             "FROM leads ORDER BY created_at DESC LIMIT 200"
         )
         rows = cur.fetchall()
+        viewer = actor(event, cur)
+        params_get = event.get('queryStringParameters') or {}
+        reveal_id = params_get.get('revealPhone')
+        reveal = int(reveal_id) if reveal_id and str(reveal_id).isdigit() else None
+        if reveal and viewer:
+            cur.execute(f"SELECT name, company FROM leads WHERE id = {reveal}")
+            who = cur.fetchone()
+            audit(cur, viewer, event, 'phone_revealed', 'lead', reveal,
+                  f"Открыт телефон: {(who[1] or who[0]) if who else reveal}", 'warning')
+            conn.commit()
+
         leads = [{
-            'id': r[0], 'name': r[1], 'phone': r[2], 'comment': r[3],
+            'id': r[0], 'name': r[1],
+            'phone': r[2] if (reveal == r[0] or not viewer) else mask_phone(r[2]),
+            'phoneHidden': not (reveal == r[0] or not viewer),
+            'comment': r[3],
             'duration': r[4], 'days': r[5], 'needVideo': r[6], 'totalPrice': r[7],
             'source': r[8], 'status': r[9],
             'createdAt': r[10].isoformat() if r[10] else None,
@@ -297,7 +383,7 @@ def handler(event: dict, context) -> dict:
         headers = event.get('headers', {})
         provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
 
-        if admin_key and provided != admin_key:
+        if not allowed(event, cur):
             cur.close()
             conn.close()
             return {
@@ -515,6 +601,18 @@ def handler(event: dict, context) -> dict:
                       f"График платежей: {len(rows_to_save)} платеж(ей) на " +
                       f"{plan_total:,}".replace(',', ' ') + " ₽")
 
+        staff = actor(event, cur)
+        if new_status != prev_status:
+            audit(cur, staff, event, 'status_changed', 'lead', lead_id,
+                  f"Статус: {STATUS_LABELS.get(prev_status, prev_status)} → "
+                  f"{STATUS_LABELS.get(new_status, new_status)}")
+        if new_paid != prev_paid:
+            audit(cur, staff, event, 'payment_changed', 'lead', lead_id,
+                  f"Оплата: {prev_paid} → {new_paid} ₽", 'warning')
+        if any(c.startswith(('total_price', 'placement_amount')) for c in set_clauses):
+            audit(cur, staff, event, 'terms_changed', 'lead', lead_id,
+                  'Изменены условия сделки', 'warning')
+
         plan_touched = any(
             c.startswith(('start_date', 'end_date', 'duration', 'status', 'placement_amount',
                           'total_price', 'paid_amount', 'company'))
@@ -542,7 +640,7 @@ def handler(event: dict, context) -> dict:
         headers = event.get('headers', {})
         provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
 
-        if admin_key and provided != admin_key:
+        if not allowed(event, cur):
             cur.close()
             conn.close()
             return {
@@ -569,6 +667,8 @@ def handler(event: dict, context) -> dict:
                 cur.execute(f"DELETE FROM lead_payments WHERE lead_id IN ({id_list})")
                 cur.execute(f"DELETE FROM placements WHERE lead_id IN ({id_list})")
                 cur.execute(f"DELETE FROM leads WHERE id IN ({id_list})")
+                audit(cur, actor(event, cur), event, 'leads_cleaned', 'lead', None,
+                      f"Удалено тестовых заявок: {len(ids)}", 'warning')
                 conn.commit()
             cur.close()
             conn.close()
@@ -580,11 +680,36 @@ def handler(event: dict, context) -> dict:
             }
 
         if lead_id:
-            cur.execute(f"DELETE FROM lead_events WHERE lead_id = {int(lead_id)}")
-            cur.execute(f"DELETE FROM lead_documents WHERE lead_id = {int(lead_id)}")
-            cur.execute(f"DELETE FROM lead_payments WHERE lead_id = {int(lead_id)}")
-            cur.execute(f"DELETE FROM placements WHERE lead_id = {int(lead_id)}")
-            cur.execute(f"DELETE FROM leads WHERE id = {int(lead_id)}")
+            staff = actor(event, cur)
+            lid = int(lead_id)
+
+            cur.execute(
+                "SELECT id, name, company, phone, email, status, total_price, paid_amount, "
+                "start_date, end_date, duration, days, comment, inn, legal_address "
+                f"FROM leads WHERE id = {lid}"
+            )
+            snap = cur.fetchone()
+            if snap:
+                cols = ['id', 'name', 'company', 'phone', 'email', 'status', 'total_price',
+                        'paid_amount', 'start_date', 'end_date', 'duration', 'days',
+                        'comment', 'inn', 'legal_address']
+                payload = dict(zip(cols, snap))
+                cur.execute(
+                    "SELECT due_date, amount, comment, is_paid FROM lead_payments "
+                    f"WHERE lead_id = {lid}")
+                payload['payments'] = [
+                    {'dueDate': str(r[0]), 'amount': r[1], 'comment': r[2], 'isPaid': r[3]}
+                    for r in cur.fetchall()]
+                title = payload.get('company') or payload.get('name') or f"Заявка №{lid}"
+                to_trash(cur, staff, 'lead', lid, title, payload)
+                audit(cur, staff, event, 'lead_deleted', 'lead', lid,
+                      f"Удалена заявка «{title}», восстановить можно 30 дней", 'warning')
+
+            cur.execute(f"DELETE FROM lead_events WHERE lead_id = {lid}")
+            cur.execute(f"DELETE FROM lead_documents WHERE lead_id = {lid}")
+            cur.execute(f"DELETE FROM lead_payments WHERE lead_id = {lid}")
+            cur.execute(f"DELETE FROM placements WHERE lead_id = {lid}")
+            cur.execute(f"DELETE FROM leads WHERE id = {lid}")
             conn.commit()
             cur.close()
             conn.close()

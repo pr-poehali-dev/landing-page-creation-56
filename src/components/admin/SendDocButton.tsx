@@ -22,7 +22,7 @@ export default function SendDocButton({ docId, clientEmail }: SendDocButtonProps
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Key": localStorage.getItem("fb-admin-key") || "",
+          "X-Session-Token": localStorage.getItem("fb-session-token") || "",
         },
         body: JSON.stringify({ docId, email: email || undefined }),
       });

@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import func2url from "../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
-import AdminLogin from "@/components/admin/AdminLogin";
+import StaffLogin from "@/components/admin/StaffLogin";
+import SecurityPanel from "@/components/admin/SecurityPanel";
 import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
 import BackupPanel from "@/components/admin/BackupPanel";
@@ -42,10 +43,11 @@ const Admin = () => {
   const [updating, setUpdating] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "price">("date");
-  const [adminKey, setAdminKey] = useState<string | null>(() => localStorage.getItem("fb-admin-key"));
-  const [keyInput, setKeyInput] = useState("");
-  const [authError, setAuthError] = useState("");
-  const [checking, setChecking] = useState(false);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("fb-session-token"));
+  const [staffName, setStaffName] = useState(() => localStorage.getItem("fb-staff-name") || "");
+  const [staffRole, setStaffRole] = useState(() => localStorage.getItem("fb-staff-role") || "manager");
+  const [mustChange, setMustChange] = useState(false);
+  const [newPass, setNewPass] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [reqForm, setReqForm] = useState<Requisites>(EMPTY_REQUISITES);
   const [savingReq, setSavingReq] = useState(false);
@@ -71,12 +73,12 @@ const Admin = () => {
   const termsLead = leads.find(l => l.id === editingTermsId) || null;
 
   useEffect(() => {
-    if (!adminKey) {
+    if (!token) {
       setLoading(false);
       return;
     }
     setLoading(true);
-    fetch(func2url.leads, { headers: { "X-Admin-Key": adminKey } })
+    fetch(func2url.leads, { headers: { "X-Session-Token": token || "" } })
       .then(r => {
         if (r.status === 403) throw new Error("forbidden");
         return r.json();
@@ -84,20 +86,36 @@ const Admin = () => {
       .then(d => setLeads(d.leads || []))
       .catch(err => {
         if (err.message === "forbidden") {
-          localStorage.removeItem("fb-admin-key");
-          setAdminKey(null);
-          setAuthError("Неверный пароль");
+          localStorage.removeItem("fb-session-token");
+          setToken(null);
         } else {
           setError("Не удалось загрузить заявки");
         }
       })
       .finally(() => setLoading(false));
-  }, [adminKey]);
+  }, [token]);
+
+  async function revealPhone(leadId: number) {
+    if (!token) return;
+    try {
+      const res = await fetch(`${func2url.leads}?revealPhone=${leadId}`, {
+        headers: { "X-Session-Token": token },
+      });
+      if (!res.ok) return;
+      const d = await res.json();
+      const fresh = (d.leads || []).find((x: Lead) => x.id === leadId);
+      if (fresh) {
+        setLeads(prev => prev.map(l => (l.id === leadId ? { ...l, phone: fresh.phone, phoneHidden: false } : l)));
+      }
+    } catch {
+      setError("Не удалось открыть телефон");
+    }
+  }
 
   async function fetchLeads() {
-    if (!adminKey) return;
+    if (!token) return;
     try {
-      const res = await fetch(func2url.leads, { headers: { "X-Admin-Key": adminKey } });
+      const res = await fetch(func2url.leads, { headers: { "X-Session-Token": token || "" } });
       if (!res.ok) return;
       const d = await res.json();
       setLeads(d.leads || []);
@@ -106,29 +124,56 @@ const Admin = () => {
     }
   }
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setAuthError("");
-    setChecking(true);
-    fetch(func2url.leads, { headers: { "X-Admin-Key": keyInput } })
-      .then(r => {
-        if (r.status === 403) throw new Error("forbidden");
-        return r.json();
-      })
-      .then(d => {
-        localStorage.setItem("fb-admin-key", keyInput);
-        setAdminKey(keyInput);
-        setLeads(d.leads || []);
-      })
-      .catch(() => setAuthError("Неверный пароль"))
-      .finally(() => setChecking(false));
+  function handleStaffLogin(session: { token: string; name: string; role: string; mustChange: boolean }) {
+    localStorage.setItem("fb-session-token", session.token);
+    localStorage.setItem("fb-staff-name", session.name);
+    localStorage.setItem("fb-staff-role", session.role);
+    setToken(session.token);
+    setStaffName(session.name);
+    setStaffRole(session.role);
+    setMustChange(session.mustChange);
+
+    if ((session as { backupDue?: boolean }).backupDue) {
+      fetch(func2url.security, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Session-Token": session.token },
+        body: JSON.stringify({ action: "autoBackup" }),
+      }).catch(() => undefined);
+    }
   }
 
-  function handleLogout() {
-    localStorage.removeItem("fb-admin-key");
-    setAdminKey(null);
-    setKeyInput("");
+  async function handleLogout() {
+    if (token) {
+      await fetch(func2url.auth, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
+        body: JSON.stringify({ action: "logout" }),
+      }).catch(() => undefined);
+    }
+    localStorage.removeItem("fb-session-token");
+    localStorage.removeItem("fb-staff-name");
+    localStorage.removeItem("fb-staff-role");
+    setToken(null);
+    setStaffName("");
     setLeads([]);
+  }
+
+  async function submitNewPassword() {
+    if (newPass.length < 6) {
+      setError("Пароль должен быть от 6 символов");
+      return;
+    }
+    const res = await fetch(func2url.auth, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
+      body: JSON.stringify({ action: "changePassword", newPassword: newPass }),
+    });
+    if (res.ok) {
+      setMustChange(false);
+      setNewPass("");
+    } else {
+      setError("Не удалось сменить пароль");
+    }
   }
 
   function openRequisites(l: Lead) {
@@ -195,7 +240,7 @@ const Admin = () => {
 
       const res = await fetch(func2url.leads, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
@@ -234,7 +279,7 @@ const Admin = () => {
     try {
       const res = await fetch(func2url.leads, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
         body: JSON.stringify({ id, ...reqForm }),
       });
       if (!res.ok) throw new Error("fail");
@@ -301,7 +346,7 @@ const Admin = () => {
     try {
       const res = await fetch(func2url.contract, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
         body: JSON.stringify({ leadId: id }),
       });
       const data = await res.json();
@@ -322,7 +367,7 @@ const Admin = () => {
     try {
       const res = await fetch(`${func2url.leads}?docId=${docId}`, {
         method: "DELETE",
-        headers: { "X-Admin-Key": adminKey || "" },
+        headers: { "X-Session-Token": token || "" },
       });
       if (!res.ok) throw new Error("fail");
     } catch {
@@ -337,7 +382,7 @@ const Admin = () => {
     try {
       const res = await fetch(`${func2url.leads}?leadId=${id}`, {
         method: "DELETE",
-        headers: { "X-Admin-Key": adminKey || "" },
+        headers: { "X-Session-Token": token || "" },
       });
       if (!res.ok) throw new Error("fail");
     } catch {
@@ -351,7 +396,7 @@ const Admin = () => {
     try {
       const res = await fetch(func2url.leads, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
         body: JSON.stringify({ id, status }),
       });
       if (!res.ok) throw new Error("fail");
@@ -368,7 +413,7 @@ const Admin = () => {
   async function cleanTestLeads(ids: number[]) {
     const res = await fetch(`${func2url.leads}?leadIds=${ids.join(",")}`, {
       method: "DELETE",
-      headers: { "X-Admin-Key": adminKey || "" },
+      headers: { "X-Session-Token": token || "" },
     });
     if (!res.ok) throw new Error("Не удалось удалить заявки");
     setLeads(prev => prev.filter(l => !ids.includes(l.id)));
@@ -377,7 +422,7 @@ const Admin = () => {
   async function savePayments(leadId: number, rows: LeadPayment[]) {
     const res = await fetch(func2url.leads, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+      headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
       body: JSON.stringify({ id: leadId, payments: rows }),
     });
     if (!res.ok) throw new Error("Не удалось сохранить график");
@@ -405,7 +450,7 @@ const Admin = () => {
     try {
       const res = await fetch(func2url.leads, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token || "" },
         body: JSON.stringify({ id, paidAmount }),
       });
       if (!res.ok) throw new Error("fail");
@@ -426,21 +471,38 @@ const Admin = () => {
     }
   }
 
-  if (!adminKey) {
-    return (
-      <AdminLogin
-        keyInput={keyInput}
-        setKeyInput={setKeyInput}
-        authError={authError}
-        checking={checking}
-        onSubmit={handleLogin}
-      />
-    );
+  if (!token) {
+    return <StaffLogin onLogin={handleStaffLogin} />;
   }
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-6xl mx-auto">
+        {mustChange && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+            <div className="text-sm font-medium text-amber-900 mb-1">
+              Смените временный пароль
+            </div>
+            <div className="text-xs text-amber-700 mb-2">
+              Вы вошли с паролем, который выдала система. Придумайте свой — он будет известен только вам.
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <input
+                type="password"
+                value={newPass}
+                onChange={e => setNewPass(e.target.value)}
+                placeholder="Новый пароль (от 6 символов)"
+                className="text-sm border border-amber-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 bg-white"
+              />
+              <button
+                onClick={submitNewPassword}
+                className="text-sm bg-amber-600 text-white rounded-lg px-4 py-2 hover:bg-amber-700 transition"
+              >
+                Сохранить пароль
+              </button>
+            </div>
+          </div>
+        )}
         <AdminToolbar
           leadsCount={leads.length}
           loading={loading}
@@ -451,6 +513,8 @@ const Admin = () => {
           sortBy={sortBy}
           setSortBy={setSortBy}
           onLogout={handleLogout}
+          staffName={staffName}
+          staffRole={staffRole}
           search={search}
           setSearch={setSearch}
           foundCount={filteredLeads.length}
@@ -458,11 +522,12 @@ const Admin = () => {
 
         {!loading && <HelpPanel />}
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
-        {!loading && <MediaPlanPanel adminKey={adminKey || ""} />}
-        {!loading && <ClientBasePanel adminKey={adminKey || ""} onLeadCreated={fetchLeads} />}
-        {!loading && <MonitoringPanel adminKey={adminKey || ""} />}
+        {!loading && <MediaPlanPanel token={token || ""} />}
+        {!loading && <ClientBasePanel token={token || ""} onLeadCreated={fetchLeads} />}
+        {!loading && <MonitoringPanel token={token || ""} />}
         {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
-        {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
+        {!loading && token && <SecurityPanel token={token} role={staffRole} onRestored={fetchLeads} />}
+        {!loading && token && staffRole === "director" && <BackupPanel token={token} />}
 
         {loading && <div className="text-slate-500">Загружаем…</div>}
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-4">{error}</div>}
@@ -526,6 +591,7 @@ const Admin = () => {
                 generatingId={generatingId}
                 contractError={contractError}
                 savePayments={savePayments}
+                revealPhone={revealPhone}
                 deleteDocument={deleteDocument}
                 openDealTerms={openDealTerms}
                 confirmDeleteId={confirmDeleteId}

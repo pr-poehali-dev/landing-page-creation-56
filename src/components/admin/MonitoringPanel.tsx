@@ -6,11 +6,11 @@ import WatchSources from "./WatchSources";
 import { MonitoringData } from "./monitoringTypes";
 
 interface MonitoringPanelProps {
-  adminKey: string;
+  token: string;
   onDataChanged?: () => void;
 }
 
-export default function MonitoringPanel({ adminKey, onDataChanged }: MonitoringPanelProps) {
+export default function MonitoringPanel({ token, onDataChanged }: MonitoringPanelProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<MonitoringData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export default function MonitoringPanel({ adminKey, onDataChanged }: MonitoringP
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(func2url.monitoring, { headers: { "X-Admin-Key": adminKey } });
+      const res = await fetch(func2url.monitoring, { headers: { "X-Session-Token": token } });
       if (!res.ok) throw new Error("Не удалось загрузить мониторинг");
       setData(await res.json());
     } catch (e) {
@@ -30,7 +30,7 @@ export default function MonitoringPanel({ adminKey, onDataChanged }: MonitoringP
     } finally {
       setLoading(false);
     }
-  }, [adminKey]);
+  }, [token]);
 
   useEffect(() => {
     if (open) load();
@@ -40,14 +40,14 @@ export default function MonitoringPanel({ adminKey, onDataChanged }: MonitoringP
     async (payload: Record<string, unknown>) => {
       const res = await fetch(func2url.monitoring, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token },
         body: JSON.stringify(payload),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || "Действие не выполнено");
       return json;
     },
-    [adminKey]
+    [token]
   );
 
   async function run(payload: Record<string, unknown>, message?: (r: Record<string, unknown>) => string) {

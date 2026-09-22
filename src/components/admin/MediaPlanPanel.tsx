@@ -7,10 +7,10 @@ import RevenueSummary from "./RevenueSummary";
 import { MediaPlanData, money, monthTitle } from "./mediaPlanTypes";
 
 interface MediaPlanPanelProps {
-  adminKey: string;
+  token: string;
 }
 
-export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
+export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"plan" | "revenue">("plan");
   const [data, setData] = useState<MediaPlanData | null>(null);
@@ -28,7 +28,7 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
       setError("");
       try {
         const res = await fetch(`${func2url.mediaplan}?year=${year}&month=${month}`, {
-          headers: { "X-Admin-Key": adminKey },
+          headers: { "X-Session-Token": token },
         });
         if (!res.ok) throw new Error("Не удалось загрузить медиаплан");
         setData(await res.json());
@@ -38,7 +38,7 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
         setLoading(false);
       }
     },
-    [adminKey]
+    [token]
   );
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
     try {
       const res = await fetch(func2url["import-plan"], {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token },
         body: JSON.stringify(syncLeads ? { syncLeads: true } : {}),
       });
       const json = await res.json().catch(() => ({}));
@@ -78,7 +78,7 @@ export default function MediaPlanPanel({ adminKey }: MediaPlanPanelProps) {
     try {
       const res = await fetch(func2url["plan-export"], {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token },
         body: JSON.stringify(onlyMonth ? period : {}),
       });
       const json = await res.json();

@@ -1,0 +1,4 @@
+{"tests": [
+  {"name": "Корзина без сессии запрещена", "method": "GET", "path": "/", "expectedStatus": 401},
+  {"name": "OPTIONS возвращает 200", "method": "OPTIONS", "path": "/", "expectedStatus": 200}
+]}

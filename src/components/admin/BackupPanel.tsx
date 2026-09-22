@@ -13,7 +13,7 @@ interface BackupItem {
 }
 
 interface BackupPanelProps {
-  adminKey: string;
+  token: string;
 }
 
 function periodLabel(period: string) {
@@ -33,7 +33,7 @@ function fmtDate(iso: string | null) {
   });
 }
 
-export default function BackupPanel({ adminKey }: BackupPanelProps) {
+export default function BackupPanel({ token }: BackupPanelProps) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<BackupItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ export default function BackupPanel({ adminKey }: BackupPanelProps) {
   useEffect(() => {
     if (!open || loaded) return;
     setLoading(true);
-    fetch(func2url.backup, { headers: { "X-Admin-Key": adminKey } })
+    fetch(func2url.backup, { headers: { "X-Session-Token": token } })
       .then(r => r.json())
       .then(d => {
         setItems(d.backups || []);
@@ -52,7 +52,7 @@ export default function BackupPanel({ adminKey }: BackupPanelProps) {
       })
       .catch(() => setError("Не удалось загрузить список архивов"))
       .finally(() => setLoading(false));
-  }, [open, loaded, adminKey]);
+  }, [open, loaded, token]);
 
   const thisMonth = new Date().toISOString().slice(0, 7);
   const hasThisMonth = items.some(i => i.period === thisMonth);
@@ -62,7 +62,7 @@ export default function BackupPanel({ adminKey }: BackupPanelProps) {
     setError("");
     fetch(func2url.backup, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+      headers: { "Content-Type": "application/json", "X-Session-Token": token },
       body: JSON.stringify({}),
     })
       .then(async r => {

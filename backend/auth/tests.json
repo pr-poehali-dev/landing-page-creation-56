@@ -1,0 +1,5 @@
+{"tests": [
+  {"name": "Вход с неверным паролем", "method": "POST", "path": "/", "body": {"action": "login", "login": "nobody", "password": "wrong"}, "expectedStatus": 403},
+  {"name": "Журнал без сессии запрещён", "method": "GET", "path": "/", "expectedStatus": 401},
+  {"name": "OPTIONS возвращает 200", "method": "OPTIONS", "path": "/", "expectedStatus": 200}
+]}

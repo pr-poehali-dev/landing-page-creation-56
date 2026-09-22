@@ -2,6 +2,7 @@ export interface Lead {
   id: number;
   name: string;
   phone: string;
+  phoneHidden?: boolean;
   comment: string | null;
   duration: number | null;
   days: number | null;

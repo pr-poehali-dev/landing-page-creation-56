@@ -23,6 +23,7 @@ interface LeadCardProps {
   generatingId: number | null;
   contractError: Record<number, string>;
   savePayments: (leadId: number, rows: LeadPayment[]) => Promise<void>;
+  revealPhone: (leadId: number) => Promise<void>;
   deleteDocument: (leadId: number, docId: number | null) => void;
   openDealTerms: (l: Lead) => void;
   confirmDeleteId: number | null;
@@ -49,6 +50,7 @@ export default function LeadCard({
   generatingId,
   contractError,
   savePayments,
+  revealPhone,
   deleteDocument,
   openDealTerms,
   confirmDeleteId,
@@ -85,7 +87,18 @@ export default function LeadCard({
               Добавлена вручную
             </div>
           )}
-          <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-rose-600 font-medium block">{l.phone}</a>
+          {l.phoneHidden ? (
+            <button
+              onClick={() => revealPhone(l.id)}
+              title="Показать телефон — действие попадёт в журнал"
+              className="text-slate-500 font-medium flex items-center gap-1.5 hover:text-rose-600 transition"
+            >
+              {l.phone}
+              <Icon name="Eye" size={13} />
+            </button>
+          ) : (
+            <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-rose-600 font-medium block">{l.phone}</a>
+          )}
         </div>
         </div>
         <div className="text-right flex flex-col items-end gap-2">

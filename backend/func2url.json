@@ -1,4 +1,6 @@
 {
+  "security": "https://functions.poehali.dev/eb04c29e-7982-47b0-a42c-25275b8eec36",
+  "auth": "https://functions.poehali.dev/536f6b34-9d2c-437b-8146-3143051e0afc",
   "monitoring": "https://functions.poehali.dev/ae3d538c-14f9-4d33-b75c-b150829b5dda",
   "contacts": "https://functions.poehali.dev/d87f9454-575a-4b62-a79f-994804fee7e1",
   "plan-export": "https://functions.poehali.dev/ea11846b-4974-4d7a-8e06-0e0df5da3dec",

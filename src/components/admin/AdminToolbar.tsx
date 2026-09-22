@@ -11,6 +11,8 @@ interface AdminToolbarProps {
   sortBy: "date" | "price";
   setSortBy: (v: "date" | "price") => void;
   onLogout: () => void;
+  staffName?: string;
+  staffRole?: string;
   search: string;
   setSearch: (v: string) => void;
   foundCount: number;
@@ -26,6 +28,8 @@ export default function AdminToolbar({
   sortBy,
   setSortBy,
   onLogout,
+  staffName,
+  staffRole,
   search,
   setSearch,
   foundCount,
@@ -38,6 +42,14 @@ export default function AdminToolbar({
           <p className="text-slate-500 text-sm mt-1">Всего: {leadsCount}</p>
         </div>
         <div className="flex items-center gap-4">
+          {staffName && (
+            <div className="text-right">
+              <div className="text-sm font-medium text-slate-700">{staffName}</div>
+              <div className="text-[11px] text-slate-400">
+                {staffRole === "director" ? "Руководитель" : "Менеджер"}
+              </div>
+            </div>
+          )}
           <a href="/" className="text-sm text-rose-600 hover:underline">← На сайт</a>
           <button onClick={onLogout} className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1">
             <Icon name="LogOut" size={14} />

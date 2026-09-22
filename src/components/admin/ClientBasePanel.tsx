@@ -7,11 +7,11 @@ import CityAdsPanel from "./CityAdsPanel";
 import { Contact, ContactsData, FreeMonth, FUNNEL_LABELS, FUNNEL_ORDER } from "./contactTypes";
 
 interface ClientBasePanelProps {
-  adminKey: string;
+  token: string;
   onLeadCreated: () => void;
 }
 
-export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBasePanelProps) {
+export default function ClientBasePanel({ token, onLeadCreated }: ClientBasePanelProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<ContactsData | null>(null);
   const [freeMonths, setFreeMonths] = useState<FreeMonth[]>([]);
@@ -28,7 +28,7 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
     try {
       const qs = new URLSearchParams({ industry, status, search });
       const res = await fetch(`${func2url.contacts}?${qs}`, {
-        headers: { "X-Admin-Key": adminKey },
+        headers: { "X-Session-Token": token },
       });
       if (!res.ok) throw new Error("Не удалось загрузить базу");
       setData(await res.json());
@@ -37,13 +37,13 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
     } finally {
       setLoading(false);
     }
-  }, [adminKey, industry, status, search]);
+  }, [token, industry, status, search]);
 
   const loadFree = useCallback(async () => {
     try {
       const res = await fetch(func2url.contacts, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token },
         body: JSON.stringify({ action: "freeDays" }),
       });
       if (res.ok) {
@@ -53,7 +53,7 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
     } catch {
       setFreeMonths([]);
     }
-  }, [adminKey]);
+  }, [token]);
 
   useEffect(() => {
     if (!open) return;
@@ -71,7 +71,7 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
     try {
       const res = await fetch(func2url.contacts, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        headers: { "Content-Type": "application/json", "X-Session-Token": token },
         body: JSON.stringify({ action: "import" }),
       });
       const json = await res.json().catch(() => ({}));
@@ -88,7 +88,7 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
   async function handleTouch(id: number, payload: Record<string, unknown>) {
     const res = await fetch(func2url.contacts, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+      headers: { "Content-Type": "application/json", "X-Session-Token": token },
       body: JSON.stringify({ action: "touch", contactId: id, ...payload }),
     });
     if (!res.ok) throw new Error("Не удалось сохранить результат");
@@ -98,7 +98,7 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
   async function handleAddAd(payload: Record<string, unknown>) {
     const res = await fetch(func2url.contacts, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+      headers: { "Content-Type": "application/json", "X-Session-Token": token },
       body: JSON.stringify({ action: "addAd", ...payload }),
     });
     if (!res.ok) throw new Error("Не удалось сохранить наблюдение");
@@ -108,7 +108,7 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
   async function handleDeleteAd(id: number) {
     const res = await fetch(func2url.contacts, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+      headers: { "Content-Type": "application/json", "X-Session-Token": token },
       body: JSON.stringify({ action: "deleteAd", adId: id }),
     });
     if (!res.ok) throw new Error("Не удалось удалить наблюдение");
@@ -133,7 +133,7 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
 
     await fetch(func2url.contacts, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+      headers: { "Content-Type": "application/json", "X-Session-Token": token },
       body: JSON.stringify({ id: c.id, leadId: leadJson.id, funnelStatus: "won" }),
     });
     await load();

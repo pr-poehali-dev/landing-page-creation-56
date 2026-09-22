@@ -22,6 +22,25 @@ def esc(v):
     return "'" + str(v).replace("'", "''") + "'"
 
 
+def session_ok(event, cur):
+    """Доступ по мастер-паролю или активной сессии сотрудника"""
+    master = os.environ.get('ADMIN_KEY', '')
+    headers = event.get('headers') or {}
+    provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
+    if master and provided == master:
+        return True
+    token = headers.get('X-Session-Token') or headers.get('x-session-token')
+    if not token:
+        return False
+    safe = str(token).replace("'", "''")
+    cur.execute(
+        "SELECT 1 FROM staff_sessions s JOIN staff st ON st.id = s.staff_id "
+        f"WHERE s.token = '{safe}' AND s.revoked = FALSE "
+        "AND s.expires_at > CURRENT_TIMESTAMP AND st.active = TRUE"
+    )
+    return cur.fetchone() is not None
+
+
 def fetch(url, timeout=6):
     req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept-Language': 'ru'})
     with urllib.request.urlopen(req, timeout=timeout, context=SSL_CTX) as resp:
@@ -148,15 +167,13 @@ def handler(event: dict, context) -> dict:
     if method == 'OPTIONS':
         return {'statusCode': 200, 'headers': cors, 'body': ''}
 
-    admin_key = os.environ.get('ADMIN_KEY', '')
-    headers = event.get('headers', {})
-    provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
-    if admin_key and provided != admin_key:
-        return {'statusCode': 403, 'headers': {**cors, 'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'Доступ запрещён'}, ensure_ascii=False)}
-
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
     cur = conn.cursor()
+
+    if not session_ok(event, cur):
+        cur.close(); conn.close()
+        return {'statusCode': 403, 'headers': {**cors, 'Content-Type': 'application/json'},
+                'body': json.dumps({'error': 'Доступ запрещён'}, ensure_ascii=False)}
     out = {**cors, 'Content-Type': 'application/json'}
 
     if method == 'GET':

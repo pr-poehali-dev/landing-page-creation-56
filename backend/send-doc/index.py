@@ -64,6 +64,30 @@ def build_message(sender, to_email, doc_type, doc_no, client_name, file_name, fi
     return msg
 
 
+def session_ok(event):
+    """Доступ по мастер-паролю или активной сессии сотрудника"""
+    master = os.environ.get('ADMIN_KEY', '')
+    headers = event.get('headers') or {}
+    provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
+    if master and provided == master:
+        return True
+    token = headers.get('X-Session-Token') or headers.get('x-session-token')
+    if not token:
+        return False
+    safe = str(token).replace("'", "''")
+    c = psycopg2.connect(os.environ['DATABASE_URL'])
+    k = c.cursor()
+    k.execute(
+        "SELECT 1 FROM staff_sessions s JOIN staff st ON st.id = s.staff_id "
+        f"WHERE s.token = '{safe}' AND s.revoked = FALSE "
+        "AND s.expires_at > CURRENT_TIMESTAMP AND st.active = TRUE"
+    )
+    ok = k.fetchone() is not None
+    k.close()
+    c.close()
+    return ok
+
+
 def handler(event: dict, context) -> dict:
     """Отправляет сформированный документ клиенту на электронную почту вложением"""
     method = event.get('httpMethod', 'GET')
@@ -87,11 +111,7 @@ def handler(event: dict, context) -> dict:
             'body': json.dumps({'error': 'Метод не поддерживается'}, ensure_ascii=False),
             'isBase64Encoded': False
         }
-
-    admin_key = os.environ.get('ADMIN_KEY', '')
-    headers = event.get('headers', {})
-    provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
-    if admin_key and provided != admin_key:
+    if not session_ok(event):
         return {
             'statusCode': 403,
             'headers': json_headers,

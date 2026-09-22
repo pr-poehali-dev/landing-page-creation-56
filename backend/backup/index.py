@@ -219,6 +219,61 @@ def list_backups(dsn):
     return items
 
 
+def log_export(event, what):
+    """Пишет выгрузку данных в журнал действий"""
+    headers = event.get('headers') or {}
+    token = headers.get('X-Session-Token') or headers.get('x-session-token')
+    req = event.get('requestContext') or {}
+    ident = req.get('identity') or {}
+    fwd = headers.get('X-Forwarded-For') or headers.get('x-forwarded-for') or ''
+    ip = ((fwd.split(',')[0].strip() if fwd else '') or ident.get('sourceIp') or '')[:45]
+    c = psycopg2.connect(os.environ['DATABASE_URL'])
+    k = c.cursor()
+    sid, name = 'NULL', 'NULL'
+    if token:
+        safe = str(token).replace("'", "''")
+        k.execute(
+            "SELECT st.id, st.name FROM staff_sessions s JOIN staff st ON st.id = s.staff_id "
+            f"WHERE s.token = '{safe}' AND s.revoked = FALSE"
+        )
+        r = k.fetchone()
+        if r:
+            sid = str(r[0])
+            name = "'" + str(r[1]).replace("'", "''") + "'"
+    text = str(what)[:500].replace("'", "''")
+    k.execute(
+        "INSERT INTO audit_log (staff_id, staff_name, action, entity, details, ip, severity) "
+        f"VALUES ({sid}, {name}, 'export', 'system', '{text}', '{ip}', 'warning')"
+    )
+    c.commit()
+    k.close()
+    c.close()
+
+
+def session_ok(event):
+    """Доступ по мастер-паролю или активной сессии сотрудника"""
+    master = os.environ.get('ADMIN_KEY', '')
+    headers = event.get('headers') or {}
+    provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
+    if master and provided == master:
+        return True
+    token = headers.get('X-Session-Token') or headers.get('x-session-token')
+    if not token:
+        return False
+    safe = str(token).replace("'", "''")
+    c = psycopg2.connect(os.environ['DATABASE_URL'])
+    k = c.cursor()
+    k.execute(
+        "SELECT 1 FROM staff_sessions s JOIN staff st ON st.id = s.staff_id "
+        f"WHERE s.token = '{safe}' AND s.revoked = FALSE "
+        "AND s.expires_at > CURRENT_TIMESTAMP AND st.active = TRUE"
+    )
+    ok = k.fetchone() is not None
+    k.close()
+    c.close()
+    return ok
+
+
 def handler(event: dict, context) -> dict:
     """Формирует резервную выгрузку базы заявок и документов в Excel, сохраняет её в хранилище и возвращает историю архивов"""
     method = event.get('httpMethod', 'GET')
@@ -235,10 +290,7 @@ def handler(event: dict, context) -> dict:
 
     json_headers = {**cors_headers, 'Content-Type': 'application/json'}
 
-    admin_key = os.environ.get('ADMIN_KEY', '')
-    headers = event.get('headers', {})
-    provided = headers.get('X-Admin-Key') or headers.get('x-admin-key', '')
-    if admin_key and provided != admin_key:
+    if not session_ok(event):
         return {
             'statusCode': 403,
             'headers': json_headers,
@@ -264,6 +316,7 @@ def handler(event: dict, context) -> dict:
             'isBase64Encoded': False
         }
 
+    log_export(event, 'Выгрузка всей базы CRM в Excel')
     leads, docs = fetch_data(dsn)
     if not leads:
         return {
