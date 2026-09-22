@@ -100,6 +100,9 @@ export default function NewLeadForm({ onCreated }: NewLeadFormProps) {
         signerName: null,
         signerPosition: null,
         paidAmount: 0,
+        consentAt: null,
+        consentIp: null,
+        consentText: null,
         documents: [],
         events: [{ type: "created", details: "Добавлена вручную", createdAt: new Date().toISOString() }],
       });

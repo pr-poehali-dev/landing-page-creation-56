@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import func2url from "../../../backend/func2url.json";
-import { COMPANY } from "./company";
+import { COMPANY, CONSENT_DATA, CONSENT_POLICY, PRIVACY_UPDATED } from "./company";
 import PrivacyModal from "./PrivacyModal";
 import { calcPlacement, plural, fmt, MIN_DAYS, CalcPreset } from "./pricing";
 import { endFromStart } from "../admin/dealDates";
@@ -82,6 +82,8 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       totalPrice: estimate ? estimate.total : null,
       startDate: startDate || null,
       source: "form",
+      consent: true,
+      consentText: `${CONSENT_DATA} ${CONSENT_POLICY} (Политика в редакции от ${PRIVACY_UPDATED})`,
     };
     try {
       const res = await fetch(func2url.leads, {
@@ -224,10 +226,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                       checked={consent}
                       onChange={e => { setConsent(e.target.checked); if (e.target.checked) setError(""); }}
                     />
-                    <span>
-                      Даю согласие на обработку моих персональных данных (имя, телефон) для связи со мной
-                      и подготовки коммерческого предложения.
-                    </span>
+                    <span>{CONSENT_DATA}</span>
                   </label>
                   <label className="fb-consent">
                     <input

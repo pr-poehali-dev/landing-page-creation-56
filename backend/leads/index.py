@@ -74,6 +74,22 @@ def handler(event: dict, context) -> dict:
         email_esc = email.replace("'", "''")
         email_val = f"'{email_esc}'" if email else 'NULL'
 
+        consent_given = bool(body.get('consent', False))
+        consent_val = 'NULL'
+        consent_ip_val = 'NULL'
+        consent_text_val = 'NULL'
+        if consent_given and source == 'form':
+            req_ctx = event.get('requestContext') or {}
+            identity = req_ctx.get('identity') or {}
+            raw_headers = event.get('headers') or {}
+            fwd = raw_headers.get('X-Forwarded-For') or raw_headers.get('x-forwarded-for') or ''
+            client_ip = (fwd.split(',')[0].strip() if fwd else '') or identity.get('sourceIp') or ''
+            client_ip = client_ip[:45].replace("'", "")
+            consent_text = str(body.get('consentText', ''))[:1000].replace("'", "''")
+            consent_val = 'CURRENT_TIMESTAMP'
+            consent_ip_val = f"'{client_ip}'" if client_ip else 'NULL'
+            consent_text_val = f"'{consent_text}'" if consent_text else 'NULL'
+
         start_raw = str(body.get('startDate') or '')[:10]
         start_val = 'NULL'
         if start_raw:
@@ -84,14 +100,19 @@ def handler(event: dict, context) -> dict:
                 start_val = 'NULL'
 
         query = (
-            f"INSERT INTO leads (name, phone, comment, duration, days, need_video, total_price, source, company, email, start_date) "
+            f"INSERT INTO leads (name, phone, comment, duration, days, need_video, total_price, source, company, email, start_date, "
+            f"consent_at, consent_ip, consent_text) "
             f"VALUES ('{name_esc}', '{phone_esc}', '{comment_esc}', {dur_val}, {days_val}, "
-            f"{'TRUE' if need_video else 'FALSE'}, {price_val}, '{source_esc}', {company_val}, {email_val}, {start_val}) RETURNING id"
+            f"{'TRUE' if need_video else 'FALSE'}, {price_val}, '{source_esc}', {company_val}, {email_val}, {start_val}, "
+            f"{consent_val}, {consent_ip_val}, {consent_text_val}) RETURNING id"
         )
         cur.execute(query)
         lead_id = cur.fetchone()[0]
         log_event(cur, lead_id, 'created',
                   'Добавлена вручную' if source == 'manual' else 'Заявка с сайта')
+        if consent_given and source == 'form':
+            log_event(cur, lead_id, 'consent',
+                      f"Согласие на обработку персональных данных получено. IP: {client_ip or 'не определён'}")
         conn.commit()
         cur.close()
         conn.close()
@@ -122,7 +143,7 @@ def handler(event: dict, context) -> dict:
             "SELECT id, name, phone, comment, duration, days, need_video, total_price, "
             "source, status, created_at, company, start_date, end_date, placement_amount, video_amount, "
             "inn, kpp, ogrn, legal_address, bank_name, bank_account, bank_bik, bank_corr_account, "
-            "signer_name, signer_position, paid_amount, email "
+            "signer_name, signer_position, paid_amount, email, consent_at, consent_ip, consent_text "
             "FROM leads ORDER BY created_at DESC LIMIT 200"
         )
         rows = cur.fetchall()
@@ -140,6 +161,9 @@ def handler(event: dict, context) -> dict:
             'signerName': r[24], 'signerPosition': r[25],
             'paidAmount': r[26] or 0,
             'email': r[27],
+            'consentAt': r[28].isoformat() if r[28] else None,
+            'consentIp': r[29],
+            'consentText': r[30],
             'documents': [], 'events': []
         } for r in rows]
 

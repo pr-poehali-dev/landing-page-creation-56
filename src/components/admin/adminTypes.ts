@@ -27,6 +27,9 @@ export interface Lead {
   signerPosition: string | null;
   paidAmount: number;
   email: string | null;
+  consentAt: string | null;
+  consentIp: string | null;
+  consentText: string | null;
   documents: LeadDocument[];
   events: LeadEvent[];
 }

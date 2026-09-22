@@ -3,6 +3,7 @@ import { Lead, STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 import LeadReadiness from "./LeadReadiness";
 import SendDocButton from "./SendDocButton";
 import LeadHistory from "./LeadHistory";
+import ConsentBadge from "./ConsentBadge";
 
 interface LeadCardProps {
   lead: Lead;
@@ -196,6 +197,8 @@ export default function LeadCard({
           {l.bankAccount && <div>Р/с {l.bankAccount}{l.bankBik ? ` · БИК ${l.bankBik}` : ""}</div>}
         </div>
       )}
+
+      <ConsentBadge lead={l} formatDate={formatDate} />
 
       <LeadReadiness lead={l} openRequisites={openRequisites} openDealTerms={openDealTerms} />
 

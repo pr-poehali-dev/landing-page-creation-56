@@ -21,6 +21,23 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Создание заявки с согласием",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Тест Согласие",
+        "phone": "+7 (900) 000-00-00",
+        "source": "form",
+        "consent": true,
+        "consentText": "Даю согласие на обработку персональных данных."
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Заявка без имени возвращает ошибку",
       "method": "POST",
       "path": "/",
