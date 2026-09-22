@@ -7,7 +7,6 @@ import LeadCard from "@/components/admin/LeadCard";
 import BackupPanel from "@/components/admin/BackupPanel";
 import HelpPanel from "@/components/admin/HelpPanel";
 import NewLeadForm from "@/components/admin/NewLeadForm";
-import UnpaidPanel from "@/components/admin/UnpaidPanel";
 import TestDataPanel from "@/components/admin/TestDataPanel";
 import AdminModal from "@/components/admin/AdminModal";
 import RequisitesForm from "@/components/admin/RequisitesForm";
@@ -57,7 +56,6 @@ const Admin = () => {
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [highlightId, setHighlightId] = useState<number | null>(null);
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -268,18 +266,6 @@ const Admin = () => {
     return { ...l, events: [{ type, details, createdAt: new Date().toISOString() }, ...(l.events || [])] };
   }
 
-  function focusLead(id: number) {
-    setSearch("");
-    setStatusFilter("all");
-    const idx = leads.findIndex(l => l.id === id);
-    if (idx >= 0) setVisibleCount(c => Math.max(c, idx + PAGE_SIZE));
-    setHighlightId(id);
-    setTimeout(() => {
-      document.getElementById(`lead-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 80);
-    setTimeout(() => setHighlightId(null), 2600);
-  }
-
   const visibleLeads = filteredLeads.slice(0, visibleCount);
   const restCount = filteredLeads.length - visibleLeads.length;
 
@@ -452,7 +438,6 @@ const Admin = () => {
 
         {!loading && <HelpPanel />}
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
-        {!loading && <UnpaidPanel leads={leads} onOpenLead={focusLead} />}
         {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
@@ -486,7 +471,7 @@ const Admin = () => {
         {!loading && filteredLeads.length > 0 && (
           <div className="grid gap-3">
             {visibleLeads.map(l => (
-              <div key={l.id} id={`lead-${l.id}`} className={highlightId === l.id ? "rounded-2xl ring-2 ring-amber-400 ring-offset-2 transition" : "transition"}>
+              <div key={l.id} id={`lead-${l.id}`}>
               <LeadCard
                 lead={l}
                 updating={updating}
