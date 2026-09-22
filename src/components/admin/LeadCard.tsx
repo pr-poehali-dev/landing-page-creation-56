@@ -145,15 +145,15 @@ export default function LeadCard({
           ) : (
             <span className="bg-slate-100 text-slate-500 rounded-full px-3 py-1">условия не заданы</span>
           )}
-          {l.totalPrice > 0 && (
+          {!!l.totalPrice && (
             <span className={`rounded-full px-3 py-1 font-medium ${
-              l.paidAmount >= l.totalPrice
+              l.paidAmount >= (l.totalPrice || 0)
                 ? "bg-emerald-100 text-emerald-700"
                 : l.paidAmount > 0
                 ? "bg-amber-100 text-amber-700"
                 : "bg-slate-200 text-slate-600"
             }`}>
-              {l.paidAmount >= l.totalPrice ? "оплачено" : l.paidAmount > 0 ? `оплачено ${l.paidAmount.toLocaleString("ru-RU")} ₽` : "не оплачено"}
+              {l.paidAmount >= (l.totalPrice || 0) ? "оплачено" : l.paidAmount > 0 ? `оплачено ${l.paidAmount.toLocaleString("ru-RU")} ₽` : "не оплачено"}
             </span>
           )}
           {nextDue && (

@@ -444,7 +444,7 @@ const Admin = () => {
 
         {!loading && <HelpPanel />}
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
-        {!loading && <MediaPlanPanel leads={leads} />}
+        {!loading && <MediaPlanPanel adminKey={adminKey || ""} />}
         {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 

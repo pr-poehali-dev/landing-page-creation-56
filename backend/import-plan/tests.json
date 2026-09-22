@@ -1,0 +1,4 @@
+{"tests": [
+  {"name": "Импорт без пароля запрещён", "method": "POST", "path": "/", "body": {}, "expectedStatus": 403},
+  {"name": "OPTIONS возвращает 200", "method": "OPTIONS", "path": "/", "expectedStatus": 200}
+]}
