@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import PrivacyModal from "./PrivacyModal";
 
 const KEY = "fb-cookie-consent";
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const [policyOpen, setPolicyOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -22,13 +24,19 @@ export default function CookieBanner() {
   if (!visible) return null;
 
   return (
-    <div className="fb-cookie" role="dialog" aria-label="Уведомление об использовании cookie">
-      <div className="fb-cookie-text">
-        Мы используем файлы cookie и сервис Яндекс.Метрика, чтобы сайт работал корректно и мы понимали,
-        какие разделы вам интересны. Продолжая пользоваться сайтом, вы соглашаетесь с{" "}
-        <Link to="/privacy">политикой конфиденциальности</Link>.
+    <>
+      <div className="fb-cookie" role="dialog" aria-label="Уведомление об использовании cookie">
+        <div className="fb-cookie-text">
+          Мы используем файлы cookie и сервис Яндекс.Метрика, чтобы сайт работал корректно и мы понимали,
+          какие разделы вам интересны. Продолжая пользоваться сайтом, вы соглашаетесь с{" "}
+          <button type="button" className="fb-cookie-link" onClick={() => setPolicyOpen(true)}>
+            политикой конфиденциальности
+          </button>
+          .
+        </div>
+        <button className="fb-cookie-btn" onClick={accept}>Хорошо</button>
       </div>
-      <button className="fb-cookie-btn" onClick={accept}>Хорошо</button>
-    </div>
+      <PrivacyModal open={policyOpen} onClose={() => setPolicyOpen(false)} />
+    </>
   );
 }

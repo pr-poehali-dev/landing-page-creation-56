@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import func2url from "../../../backend/func2url.json";
 import { COMPANY } from "./company";
+import PrivacyModal from "./PrivacyModal";
 import { calcPlacement, plural, fmt, MIN_DAYS, CalcPreset } from "./pricing";
 import { endFromStart } from "../admin/dealDates";
 
@@ -33,6 +34,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
   const [days, setDays] = useState("");
   const [startDate, setStartDate] = useState("");
   const [consent, setConsent] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -218,7 +220,10 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                     />
                     <span>
                       Я согласен на обработку моих персональных данных (имя, телефон) и принимаю{" "}
-                      <Link to="/privacy" target="_blank">политику конфиденциальности</Link>.
+                      <button type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); setPrivacyOpen(true); }}>
+                        политику конфиденциальности
+                      </button>
+                      .
                     </span>
                   </label>
                   {error && <div className="fb-formerr">{error}</div>}
@@ -255,7 +260,9 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
               <br />ИНН {COMPANY.inn}
             </div>
             <div className="fb-legal-links">
-              <Link to="/privacy">Политика конфиденциальности</Link>
+              <Link to="/privacy" onClick={e => { e.preventDefault(); setPrivacyOpen(true); }}>
+                Политика конфиденциальности
+              </Link>
             </div>
           </div>
           <div>
@@ -285,6 +292,12 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
           </div>
         </div>
       </footer>
+
+      <PrivacyModal
+        open={privacyOpen}
+        onClose={() => setPrivacyOpen(false)}
+        onAccept={() => { setConsent(true); setError(""); }}
+      />
     </>
   );
 }
