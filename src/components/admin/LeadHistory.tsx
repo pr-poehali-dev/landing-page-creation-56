@@ -29,25 +29,42 @@ function formatWhen(iso: string | null): string {
   return `${d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" })} в ${time}`;
 }
 
-const PREVIEW = 3;
-
 export default function LeadHistory({ events }: LeadHistoryProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [open, setOpen] = useState(false);
 
   if (!events || events.length === 0) return null;
 
-  const shown = expanded ? events : events.slice(0, PREVIEW);
-  const hidden = events.length - shown.length;
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-3 text-xs text-slate-400 hover:text-rose-600 transition flex items-center gap-1.5"
+      >
+        <Icon name="Archive" size={13} />
+        Архив ({events.length})
+      </button>
+    );
+  }
 
   return (
     <div className="mt-3 bg-slate-50 rounded-lg p-3">
-      <div className="text-xs font-medium text-slate-500 mb-2 flex items-center gap-1.5">
-        <Icon name="History" size={13} className="text-slate-400" />
-        История
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
+          <Icon name="Archive" size={13} className="text-slate-400" />
+          Архив
+          <span className="font-normal text-slate-400">· {events.length} записей</span>
+        </div>
+        <button
+          onClick={() => setOpen(false)}
+          className="text-[11px] text-slate-400 hover:text-slate-700 transition flex items-center gap-1"
+        >
+          <Icon name="ChevronUp" size={12} />
+          Свернуть
+        </button>
       </div>
 
-      <div className="space-y-2">
-        {shown.map((e, i) => {
+      <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+        {events.map((e, i) => {
           const meta = EVENT_META[e.type] || {
             icon: "Circle",
             color: "bg-slate-100 text-slate-500",
@@ -66,16 +83,6 @@ export default function LeadHistory({ events }: LeadHistoryProps) {
           );
         })}
       </div>
-
-      {events.length > PREVIEW && (
-        <button
-          onClick={() => setExpanded(v => !v)}
-          className="mt-2 text-[11px] font-medium text-slate-500 hover:text-rose-600 transition flex items-center gap-1"
-        >
-          <Icon name={expanded ? "ChevronUp" : "ChevronDown"} size={12} />
-          {expanded ? "Свернуть историю" : `Показать ещё ${hidden}`}
-        </button>
-      )}
     </div>
   );
 }
