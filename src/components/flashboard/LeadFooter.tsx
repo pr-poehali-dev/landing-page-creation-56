@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import func2url from "../../../backend/func2url.json";
+import { COMPANY } from "./company";
 import { calcPlacement, plural, fmt, MIN_DAYS, CalcPreset } from "./pricing";
 import { endFromStart } from "../admin/dealDates";
 
@@ -30,6 +32,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
   const [duration, setDuration] = useState("");
   const [days, setDays] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [consent, setConsent] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -52,6 +55,10 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!consent) {
+      setError("Отметьте согласие на обработку персональных данных");
+      return;
+    }
     if (phone.replace(/\D/g, "").length < 11) {
       setError("Введите телефон полностью");
       return;
@@ -92,6 +99,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       setDuration("");
       setDays("");
       setStartDate("");
+      setConsent(false);
     } catch {
       setError("Не удалось отправить. Позвоните нам: +7 908 992 50 20");
     } finally {
@@ -202,11 +210,22 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                     <label>Что рекламируем? <i>(необязательно)</i></label>
                     <textarea placeholder="Например: открытие автосервиса на Семёновской, нужны водители с Океанского" value={comment} onChange={e => setComment(e.target.value)} />
                   </div>
+                  <label className="fb-consent">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={e => { setConsent(e.target.checked); if (e.target.checked) setError(""); }}
+                    />
+                    <span>
+                      Я согласен на обработку моих персональных данных (имя, телефон) и принимаю{" "}
+                      <Link to="/privacy" target="_blank">политику конфиденциальности</Link>.
+                    </span>
+                  </label>
                   {error && <div className="fb-formerr">{error}</div>}
-                  <button type="submit" className="fb-btn" disabled={sending}>
+                  <button type="submit" className="fb-btn" disabled={sending || !consent}>
                     {sending ? "Отправляем…" : "Получить смету за 1 час →"}
                   </button>
-                  <div className="fb-pp">Нажимая кнопку, вы соглашаетесь на обработку персональных данных. Заявка сохранится у нас и продублируется в Telegram.</div>
+                  <div className="fb-pp">Заявка сохранится у нас и продублируется в Telegram. Мы не передаём контакты третьим лицам.</div>
                 </form>
               )}
             </div>
@@ -230,7 +249,15 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
               </b>
               <span translate="no">Флэшборд</span>
             </a>
-            <p style={{ marginTop: 14, lineHeight: 1.6 }}>Реклама на уличных экранах Владивостока. Оператор — ИП Полусмак М.Ю.</p>
+            <p style={{ marginTop: 14, lineHeight: 1.6 }}>Реклама на уличных экранах Владивостока.</p>
+            <div className="fb-req">
+              {COMPANY.full}
+              <br />ИНН {COMPANY.inn}
+              <br />{COMPANY.address}
+            </div>
+            <div className="fb-legal-links">
+              <Link to="/privacy">Политика конфиденциальности</Link>
+            </div>
           </div>
           <div>
             <div className="fb-fh">Контакты</div>
@@ -255,7 +282,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
             <div className="fb-fh">Экран работает</div>
             <div className="fb-fr">Ежедневно, 06:00–23:00</div>
             <div className="fb-fr">Рекламный блок — каждые 5 минут</div>
-            <div className="fb-copy">© {new Date().getFullYear()} ИП Полусмак М.Ю. · <span translate="no">Флэшборд</span>. Цены на сайте не являются публичной офертой.</div>
+            <div className="fb-copy">© {new Date().getFullYear()} {COMPANY.short} · <span translate="no">Флэшборд</span>. Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ).</div>
           </div>
         </div>
       </footer>
