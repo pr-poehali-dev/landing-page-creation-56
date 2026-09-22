@@ -9,6 +9,7 @@ import HelpPanel from "@/components/admin/HelpPanel";
 import NewLeadForm from "@/components/admin/NewLeadForm";
 import TestDataPanel from "@/components/admin/TestDataPanel";
 import MediaPlanPanel from "@/components/admin/MediaPlanPanel";
+import ClientBasePanel from "@/components/admin/ClientBasePanel";
 import AdminModal from "@/components/admin/AdminModal";
 import RequisitesForm from "@/components/admin/RequisitesForm";
 import DealTermsForm from "@/components/admin/DealTermsForm";
@@ -91,6 +92,18 @@ const Admin = () => {
       })
       .finally(() => setLoading(false));
   }, [adminKey]);
+
+  async function fetchLeads() {
+    if (!adminKey) return;
+    try {
+      const res = await fetch(func2url.leads, { headers: { "X-Admin-Key": adminKey } });
+      if (!res.ok) return;
+      const d = await res.json();
+      setLeads(d.leads || []);
+    } catch {
+      setError("Не удалось обновить список заявок");
+    }
+  }
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -445,6 +458,7 @@ const Admin = () => {
         {!loading && <HelpPanel />}
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && <MediaPlanPanel adminKey={adminKey || ""} />}
+        {!loading && <ClientBasePanel adminKey={adminKey || ""} onLeadCreated={fetchLeads} />}
         {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
