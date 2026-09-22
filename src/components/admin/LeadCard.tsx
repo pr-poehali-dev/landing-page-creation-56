@@ -28,6 +28,8 @@ interface LeadCardProps {
   confirmDeleteId: number | null;
   setConfirmDeleteId: (id: number | null) => void;
   deleteLead: (id: number) => void;
+  expanded: boolean;
+  toggleExpanded: (id: number) => void;
 }
 
 export default function LeadCard({
@@ -52,12 +54,30 @@ export default function LeadCard({
   confirmDeleteId,
   setConfirmDeleteId,
   deleteLead,
+  expanded,
+  toggleExpanded,
 }: LeadCardProps) {
+  const nextDue = (l.payments || []).filter(p => !p.isPaid).sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+  const overdue = nextDue ? new Date(nextDue.dueDate) < new Date(new Date().toDateString()) : false;
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div className={`bg-white rounded-2xl border p-5 shadow-sm transition ${overdue && !expanded ? "border-rose-200" : "border-slate-200"}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="font-semibold text-slate-900 text-lg">{l.name}</div>
+        <div className="flex items-start gap-2 min-w-0">
+          <button
+            onClick={() => toggleExpanded(l.id)}
+            title={expanded ? "Свернуть карточку" : "Развернуть карточку"}
+            className="mt-1 text-slate-400 hover:text-slate-700 transition shrink-0"
+          >
+            <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={18} />
+          </button>
+        <div className="min-w-0">
+          <div
+            onClick={() => toggleExpanded(l.id)}
+            className="font-semibold text-slate-900 text-lg cursor-pointer hover:text-rose-600 transition"
+          >
+            {l.name}
+          </div>
           {l.company && <div className="text-slate-500 text-sm">{l.company}</div>}
           {l.source === "manual" && (
             <div className="inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-100 rounded-full px-2 py-0.5 mt-1">
@@ -65,7 +85,8 @@ export default function LeadCard({
               Добавлена вручную
             </div>
           )}
-          <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-rose-600 font-medium">{l.phone}</a>
+          <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-rose-600 font-medium block">{l.phone}</a>
+        </div>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
           <div className="flex items-center gap-2">
@@ -112,6 +133,47 @@ export default function LeadCard({
           </div>
         </div>
       )}
+      {!expanded && (
+        <div
+          onClick={() => toggleExpanded(l.id)}
+          className="mt-3 flex flex-wrap items-center gap-2 text-xs cursor-pointer"
+        >
+          {l.totalPrice ? (
+            <span className="bg-rose-100 text-rose-700 rounded-full px-3 py-1 font-semibold">
+              {l.totalPrice.toLocaleString("ru-RU")} ₽
+            </span>
+          ) : (
+            <span className="bg-slate-100 text-slate-500 rounded-full px-3 py-1">условия не заданы</span>
+          )}
+          {l.totalPrice > 0 && (
+            <span className={`rounded-full px-3 py-1 font-medium ${
+              l.paidAmount >= l.totalPrice
+                ? "bg-emerald-100 text-emerald-700"
+                : l.paidAmount > 0
+                ? "bg-amber-100 text-amber-700"
+                : "bg-slate-200 text-slate-600"
+            }`}>
+              {l.paidAmount >= l.totalPrice ? "оплачено" : l.paidAmount > 0 ? `оплачено ${l.paidAmount.toLocaleString("ru-RU")} ₽` : "не оплачено"}
+            </span>
+          )}
+          {nextDue && (
+            <span className={`rounded-full px-3 py-1 font-medium ${overdue ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-600"}`}>
+              {overdue ? "просрочен платёж" : "след. платёж"} {nextDue.amount.toLocaleString("ru-RU")} ₽ до{" "}
+              {new Date(nextDue.dueDate).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })}
+            </span>
+          )}
+          {l.documents.length > 0 && (
+            <span className="bg-slate-100 text-slate-600 rounded-full px-3 py-1 flex items-center gap-1">
+              <Icon name="Paperclip" size={11} />
+              {l.documents.length}
+            </span>
+          )}
+          <span className="text-slate-400 hover:text-rose-600 transition ml-auto">подробнее →</span>
+        </div>
+      )}
+
+      {expanded && (
+      <>
       {l.comment && <p className="mt-3 text-slate-600 text-sm leading-relaxed">{l.comment}</p>}
       {(l.duration || l.days || l.totalPrice || l.startDate) && (
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -256,6 +318,8 @@ export default function LeadCard({
       )}
 
       <LeadHistory events={l.events} />
+      </>
+      )}
     </div>
   );
 }

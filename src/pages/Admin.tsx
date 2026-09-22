@@ -55,6 +55,7 @@ const Admin = () => {
   const [paidInput, setPaidInput] = useState("");
   const [savingPaid, setSavingPaid] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [expandedIds, setExpandedIds] = useState<number[]>([]);
   const [search, setSearch] = useState("");
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -131,6 +132,10 @@ const Admin = () => {
       signerName: l.signerName || "",
       signerPosition: l.signerPosition || "",
     });
+  }
+
+  function toggleExpanded(id: number) {
+    setExpandedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
   }
 
   function openDealTerms(l: Lead) {
@@ -469,6 +474,20 @@ const Admin = () => {
         )}
 
         {!loading && filteredLeads.length > 0 && (
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={() =>
+                setExpandedIds(expandedIds.length > 0 ? [] : filteredLeads.map(l => l.id))
+              }
+              className="text-xs text-slate-500 hover:text-rose-600 transition flex items-center gap-1"
+            >
+              <Icon name={expandedIds.length > 0 ? "ChevronsDownUp" : "ChevronsUpDown"} size={13} />
+              {expandedIds.length > 0 ? "Свернуть все" : "Развернуть все"}
+            </button>
+          </div>
+        )}
+
+        {!loading && filteredLeads.length > 0 && (
           <div className="grid gap-3">
             {visibleLeads.map(l => (
               <div key={l.id} id={`lead-${l.id}`}>
@@ -494,6 +513,8 @@ const Admin = () => {
                 confirmDeleteId={confirmDeleteId}
                 setConfirmDeleteId={setConfirmDeleteId}
                 deleteLead={deleteLead}
+                expanded={expandedIds.includes(l.id)}
+                toggleExpanded={toggleExpanded}
               />
               </div>
             ))}
