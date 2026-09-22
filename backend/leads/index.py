@@ -474,6 +474,28 @@ def handler(event: dict, context) -> dict:
         params = event.get('queryStringParameters') or {}
         doc_id = params.get('docId')
         lead_id = params.get('leadId')
+        lead_ids = params.get('leadIds')
+
+        if lead_ids:
+            try:
+                ids = [int(x) for x in str(lead_ids).split(',') if str(x).strip()]
+            except ValueError:
+                ids = []
+            if ids:
+                id_list = ','.join(str(i) for i in ids)
+                cur.execute(f"DELETE FROM lead_events WHERE lead_id IN ({id_list})")
+                cur.execute(f"DELETE FROM lead_documents WHERE lead_id IN ({id_list})")
+                cur.execute(f"DELETE FROM lead_payments WHERE lead_id IN ({id_list})")
+                cur.execute(f"DELETE FROM leads WHERE id IN ({id_list})")
+                conn.commit()
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 200,
+                'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                'body': json.dumps({'success': True, 'deleted': len(ids)}, ensure_ascii=False),
+                'isBase64Encoded': False
+            }
 
         if lead_id:
             cur.execute(f"DELETE FROM lead_events WHERE lead_id = {int(lead_id)}")
@@ -496,7 +518,7 @@ def handler(event: dict, context) -> dict:
             return {
                 'statusCode': 400,
                 'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'Нужен docId или leadId'}, ensure_ascii=False),
+                'body': json.dumps({'error': 'Нужен docId, leadId или leadIds'}, ensure_ascii=False),
                 'isBase64Encoded': False
             }
 

@@ -8,7 +8,7 @@ import BackupPanel from "@/components/admin/BackupPanel";
 import HelpPanel from "@/components/admin/HelpPanel";
 import NewLeadForm from "@/components/admin/NewLeadForm";
 import UnpaidPanel from "@/components/admin/UnpaidPanel";
-import StatsPanel from "@/components/admin/StatsPanel";
+import TestDataPanel from "@/components/admin/TestDataPanel";
 import AdminModal from "@/components/admin/AdminModal";
 import RequisitesForm from "@/components/admin/RequisitesForm";
 import DealTermsForm from "@/components/admin/DealTermsForm";
@@ -355,6 +355,15 @@ const Admin = () => {
     }
   }
 
+  async function cleanTestLeads(ids: number[]) {
+    const res = await fetch(`${func2url.leads}?leadIds=${ids.join(",")}`, {
+      method: "DELETE",
+      headers: { "X-Admin-Key": adminKey || "" },
+    });
+    if (!res.ok) throw new Error("Не удалось удалить заявки");
+    setLeads(prev => prev.filter(l => !ids.includes(l.id)));
+  }
+
   async function savePayments(leadId: number, rows: LeadPayment[]) {
     const res = await fetch(func2url.leads, {
       method: "PATCH",
@@ -440,7 +449,7 @@ const Admin = () => {
         {!loading && <HelpPanel />}
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && <UnpaidPanel leads={leads} onOpenLead={focusLead} />}
-        {!loading && <StatsPanel leads={leads} />}
+        {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
         {loading && <div className="text-slate-500">Загружаем…</div>}
