@@ -2208,3 +2208,24 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+@media print {
+  body.printing-plan > * {
+    visibility: hidden;
+  }
+  body.printing-plan .media-plan-print,
+  body.printing-plan .media-plan-print * {
+    visibility: visible;
+  }
+  body.printing-plan .media-plan-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  body.printing-plan .media-plan-print table {
+    font-size: 10px;
+  }
+}

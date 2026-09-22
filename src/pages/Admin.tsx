@@ -8,6 +8,7 @@ import BackupPanel from "@/components/admin/BackupPanel";
 import HelpPanel from "@/components/admin/HelpPanel";
 import NewLeadForm from "@/components/admin/NewLeadForm";
 import TestDataPanel from "@/components/admin/TestDataPanel";
+import MediaPlanPanel from "@/components/admin/MediaPlanPanel";
 import AdminModal from "@/components/admin/AdminModal";
 import RequisitesForm from "@/components/admin/RequisitesForm";
 import DealTermsForm from "@/components/admin/DealTermsForm";
@@ -443,6 +444,7 @@ const Admin = () => {
 
         {!loading && <HelpPanel />}
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
+        {!loading && <MediaPlanPanel leads={leads} />}
         {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
         {!loading && adminKey && <BackupPanel adminKey={adminKey} />}
 
