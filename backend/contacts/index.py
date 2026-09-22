@@ -199,12 +199,12 @@ def handler(event: dict, context) -> dict:
         sleeping = [contact_row(r) for r in cur.fetchall()]
 
         cur.execute(
-            "SELECT a.brand, a.screen_type, a.screen_address, a.seen_date, a.ad_source, a.company "
-            "FROM city_ads a ORDER BY a.seen_date DESC NULLS LAST LIMIT 200"
+            "SELECT a.brand, a.screen_type, a.screen_address, a.seen_date, a.ad_source, "
+            "a.company, a.id FROM city_ads a ORDER BY a.seen_date DESC NULLS LAST, a.id DESC LIMIT 300"
         )
         ads = [{'brand': r[0], 'screen': r[1], 'address': r[2],
                 'seen': r[3].isoformat() if r[3] else None,
-                'source': r[4], 'company': r[5]} for r in cur.fetchall()]
+                'source': r[4], 'company': r[5], 'id': r[6]} for r in cur.fetchall()]
 
         cur.execute("SELECT DISTINCT LOWER(brand) FROM placements")
         our = set(norm(r[0]) for r in cur.fetchall() if r[0])
@@ -229,6 +229,38 @@ def handler(event: dict, context) -> dict:
         conn.close()
         return {'statusCode': 200, 'headers': out_headers,
                 'body': json.dumps(res, ensure_ascii=False)}
+
+    if method == 'POST' and body.get('action') == 'addAd':
+        brand = str(body.get('brand') or '').strip()[:250]
+        if not brand:
+            cur.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': out_headers,
+                    'body': json.dumps({'error': 'Укажите бренд'}, ensure_ascii=False)}
+        seen = str(body.get('seen') or '')[:10] or date.today().isoformat()
+        cur.execute(
+            "INSERT INTO city_ads (seen_date, screen_type, screen_address, brand, company, ad_source) "
+            f"VALUES ('{seen}', {esc(str(body.get('screen') or '')[:120] or None)}, "
+            f"{esc(str(body.get('address') or '')[:250] or None)}, {esc(brand)}, "
+            f"{esc(str(body.get('company') or '')[:250] or None)}, "
+            f"{esc(str(body.get('source') or 'Местный')[:60])}) RETURNING id"
+        )
+        new_id = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {'statusCode': 200, 'headers': out_headers,
+                'body': json.dumps({'id': new_id}, ensure_ascii=False)}
+
+    if method == 'POST' and body.get('action') == 'deleteAd':
+        ad_id = body.get('adId')
+        if ad_id:
+            cur.execute(f"DELETE FROM city_ads WHERE id = {int(ad_id)}")
+            conn.commit()
+        cur.close()
+        conn.close()
+        return {'statusCode': 200, 'headers': out_headers,
+                'body': json.dumps({'success': True}, ensure_ascii=False)}
 
     if method == 'POST' and body.get('action') == 'freeDays':
         res = free_days(cur)

@@ -3,6 +3,7 @@ import func2url from "../../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
 import ContactCard from "./ContactCard";
 import CallTodayPanel from "./CallTodayPanel";
+import CityAdsPanel from "./CityAdsPanel";
 import { Contact, ContactsData, FreeMonth, FUNNEL_LABELS, FUNNEL_ORDER } from "./contactTypes";
 
 interface ClientBasePanelProps {
@@ -91,6 +92,26 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
       body: JSON.stringify({ action: "touch", contactId: id, ...payload }),
     });
     if (!res.ok) throw new Error("Не удалось сохранить результат");
+    await load();
+  }
+
+  async function handleAddAd(payload: Record<string, unknown>) {
+    const res = await fetch(func2url.contacts, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+      body: JSON.stringify({ action: "addAd", ...payload }),
+    });
+    if (!res.ok) throw new Error("Не удалось сохранить наблюдение");
+    await load();
+  }
+
+  async function handleDeleteAd(id: number) {
+    const res = await fetch(func2url.contacts, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+      body: JSON.stringify({ action: "deleteAd", adId: id }),
+    });
+    if (!res.ok) throw new Error("Не удалось удалить наблюдение");
     await load();
   }
 
@@ -185,6 +206,8 @@ export default function ClientBasePanel({ adminKey, onLeadCreated }: ClientBaseP
                   setSearch("");
                 }}
               />
+
+              <CityAdsPanel ads={data!.ads} onAdd={handleAddAd} onDelete={handleDeleteAd} />
 
               <div className="relative mb-3">
                 <Icon

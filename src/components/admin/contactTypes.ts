@@ -23,6 +23,7 @@ export interface Contact {
 }
 
 export interface CityAd {
+  id?: number;
   brand: string;
   screen: string | null;
   address: string | null;
