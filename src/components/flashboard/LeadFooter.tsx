@@ -38,6 +38,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [tgLink, setTgLink] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -101,7 +102,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
           `\nСтарт: ${startDate ? new Date(startDate).toLocaleDateString("ru-RU") : "—"}` +
           `\nКомментарий: ${comment || "—"}`
       );
-      window.open(`https://t.me/izumrudvlpm?text=${text}`, "_blank");
+      setTgLink(`${COMPANY.telegramHref}?text=${text}`);
       setName("");
       setPhone("");
       setComment("");
@@ -153,7 +154,14 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                   </div>
                   <h3>Заявка принята</h3>
                   <p>Мы сохранили ваши контакты и свяжемся в течение часа в рабочее время — пришлём смету и свободные даты.</p>
-                  <button className="fb-btn fb-dark" onClick={() => setSent(false)}>Отправить ещё одну</button>
+                  {tgLink && (
+                    <a className="fb-btn fb-tg" href={tgLink} target="_blank" rel="noopener noreferrer">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
+                      Продолжить в Telegram
+                    </a>
+                  )}
+                  <div className="fb-success-hint">Откроется чат с готовым сообщением — просто нажмите «Отправить».</div>
+                  <button className="fb-btn fb-dark" onClick={() => { setSent(false); setTgLink(""); }}>Отправить ещё одну</button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit}>
@@ -246,7 +254,11 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                   <button type="submit" className="fb-btn" disabled={sending || !consent || !policyAccepted}>
                     {sending ? "Отправляем…" : "Получить смету за 1 час →"}
                   </button>
-                  <div className="fb-pp">Заявка сохранится у нас и продублируется в Telegram. Мы не передаём контакты третьим лицам.</div>
+                  <a className="fb-btn fb-tg" href={COMPANY.telegramHref} target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
+                    Написать в Telegram
+                  </a>
+                  <div className="fb-pp">Заявка сохранится у нас. После отправки предложим продублировать её в Telegram. Мы не передаём контакты третьим лицам.</div>
                 </form>
               )}
             </div>
