@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import func2url from "../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
 import StaffLogin from "@/components/admin/StaffLogin";
+import PasswordInput from "@/components/admin/PasswordInput";
 import SecurityPanel from "@/components/admin/SecurityPanel";
 import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
@@ -487,12 +488,12 @@ const Admin = () => {
               Вы вошли с паролем, который выдала система. Придумайте свой — он будет известен только вам.
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <input
-                type="password"
+              <PasswordInput
                 value={newPass}
-                onChange={e => setNewPass(e.target.value)}
+                onChange={setNewPass}
                 placeholder="Новый пароль (от 6 символов)"
                 className="text-sm border border-amber-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 bg-white"
+                eyeClassName="text-amber-500 hover:text-amber-700"
               />
               <button
                 onClick={submitNewPassword}

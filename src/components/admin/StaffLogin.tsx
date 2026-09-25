@@ -1,6 +1,7 @@
 import { useState } from "react";
 import func2url from "../../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
+import PasswordInput from "./PasswordInput";
 
 interface StaffLoginProps {
   onLogin: (session: { token: string; name: string; role: string; mustChange: boolean }) => void;
@@ -116,14 +117,15 @@ export default function StaffLogin({ onLogin }: StaffLoginProps) {
         </p>
 
         {setupMode ? (
-          <input
-            type="password"
-            autoFocus
-            placeholder="Мастер-пароль"
-            value={masterKey}
-            onChange={e => setMasterKey(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-rose-400 mb-3"
-          />
+          <div className="mb-3">
+            <PasswordInput
+              autoFocus
+              placeholder="Мастер-пароль"
+              value={masterKey}
+              onChange={setMasterKey}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+            />
+          </div>
         ) : (
           <>
             <input
@@ -133,13 +135,14 @@ export default function StaffLogin({ onLogin }: StaffLoginProps) {
               onChange={e => setLogin(e.target.value)}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-rose-400 mb-2"
             />
-            <input
-              type="password"
-              placeholder="Пароль"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-rose-400 mb-3"
-            />
+            <div className="mb-3">
+              <PasswordInput
+                placeholder="Пароль"
+                value={password}
+                onChange={setPassword}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+              />
+            </div>
           </>
         )}
 
