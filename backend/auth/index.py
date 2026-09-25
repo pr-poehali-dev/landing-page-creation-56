@@ -238,12 +238,34 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             return {'statusCode': 400, 'headers': out,
                     'body': json.dumps({'error': 'Пароль от 6 символов'}, ensure_ascii=False)}
+
+        cur.execute(
+            f"SELECT pass_hash, pass_salt, must_change FROM staff WHERE id = {staff['id']}")
+        prow = cur.fetchone()
+        if prow and not prow[2]:
+            current = str(body.get('currentPassword') or '')
+            if hash_pass(current, prow[1]) != prow[0]:
+                log(cur, staff, 'password_change_failed', 'staff', staff['id'],
+                    'Неверный текущий пароль при смене', ip, 'warning')
+                conn.commit(); cur.close(); conn.close()
+                return {'statusCode': 403, 'headers': out,
+                        'body': json.dumps({'error': 'Текущий пароль неверный'},
+                                           ensure_ascii=False)}
+        if prow and hash_pass(new_pass, prow[1]) == prow[0]:
+            cur.close(); conn.close()
+            return {'statusCode': 400, 'headers': out,
+                    'body': json.dumps({'error': 'Новый пароль совпадает со старым'},
+                                       ensure_ascii=False)}
         salt = secrets.token_hex(8)
         cur.execute(
             f"UPDATE staff SET pass_hash = {esc(hash_pass(new_pass, salt))}, "
             f"pass_salt = {esc(salt)}, must_change = FALSE WHERE id = {staff['id']}"
         )
-        log(cur, staff, 'password_changed', 'staff', staff['id'], 'Пароль изменён', ip, 'warning')
+        cur.execute(
+            "UPDATE staff_sessions SET revoked = TRUE "
+            f"WHERE staff_id = {staff['id']} AND revoked = FALSE AND token <> {esc(token)}")
+        log(cur, staff, 'password_changed', 'staff', staff['id'],
+            'Пароль изменён, другие сессии закрыты', ip, 'warning')
         conn.commit(); cur.close(); conn.close()
         return {'statusCode': 200, 'headers': out,
                 'body': json.dumps({'success': True}, ensure_ascii=False)}

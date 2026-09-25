@@ -3,6 +3,7 @@ import func2url from "../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
 import StaffLogin from "@/components/admin/StaffLogin";
 import PasswordInput from "@/components/admin/PasswordInput";
+import ChangePasswordModal from "@/components/admin/ChangePasswordModal";
 import SecurityPanel from "@/components/admin/SecurityPanel";
 import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
@@ -49,6 +50,7 @@ const Admin = () => {
   const [staffRole, setStaffRole] = useState(() => localStorage.getItem("fb-staff-role") || "manager");
   const [mustChange, setMustChange] = useState(false);
   const [newPass, setNewPass] = useState("");
+  const [passModal, setPassModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [reqForm, setReqForm] = useState<Requisites>(EMPTY_REQUISITES);
   const [savingReq, setSavingReq] = useState(false);
@@ -478,6 +480,9 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
+      {passModal && token && (
+        <ChangePasswordModal token={token} onClose={() => setPassModal(false)} />
+      )}
       <div className="max-w-6xl mx-auto">
         {mustChange && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
@@ -505,6 +510,7 @@ const Admin = () => {
           </div>
         )}
         <AdminToolbar
+          onChangePassword={() => setPassModal(true)}
           leadsCount={leads.length}
           loading={loading}
           activeSum={activeSum}

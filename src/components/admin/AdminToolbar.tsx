@@ -11,6 +11,7 @@ interface AdminToolbarProps {
   sortBy: "date" | "price";
   setSortBy: (v: "date" | "price") => void;
   onLogout: () => void;
+  onChangePassword: () => void;
   staffName?: string;
   staffRole?: string;
   search: string;
@@ -28,6 +29,7 @@ export default function AdminToolbar({
   sortBy,
   setSortBy,
   onLogout,
+  onChangePassword,
   staffName,
   staffRole,
   search,
@@ -50,6 +52,13 @@ export default function AdminToolbar({
               </div>
             </div>
           )}
+          <button
+            onClick={onChangePassword}
+            className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1"
+          >
+            <Icon name="KeyRound" size={14} />
+            Сменить пароль
+          </button>
           <a href="/" className="text-sm text-rose-600 hover:underline">← На сайт</a>
           <button onClick={onLogout} className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1">
             <Icon name="LogOut" size={14} />
