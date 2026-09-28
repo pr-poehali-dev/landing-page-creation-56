@@ -21,7 +21,30 @@ const Index = () => {
       setShowSticky(window.scrollY > 600);
     };
     window.addEventListener("scroll", onScroll);
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash || hash === "#top") return;
+
+    let ticks = 0;
+    const timer = window.setInterval(() => {
+      const el = document.querySelector(hash);
+      if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
+      if (++ticks > 30) window.clearInterval(timer);
+    }, 150);
+
+    const stop = () => window.clearInterval(timer);
+    window.addEventListener("wheel", stop, { passive: true });
+    window.addEventListener("touchstart", stop, { passive: true });
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("wheel", stop);
+      window.removeEventListener("touchstart", stop);
+    };
   }, []);
 
   return (

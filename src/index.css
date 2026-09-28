@@ -440,6 +440,18 @@
 #flashboard-landing section {
   padding: 68px 0;
 }
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+#flashboard-landing section[id],
+#flashboard-landing .fb-hero[id] {
+  scroll-margin-top: 76px;
+}
 #flashboard-landing .fb-kicker {
   color: var(--fb-rose);
   font-weight: 600;
@@ -1799,6 +1811,18 @@
   #flashboard-landing .fb-heroimg {
     margin-top: 8px;
   }
+  #flashboard-landing .fb-cta {
+    flex-direction: column;
+    gap: 10px;
+  }
+  #flashboard-landing .fb-cta .fb-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 15px 20px;
+  }
+  #flashboard-landing .fb-mobmenu .fb-btn {
+    padding: 15px 20px;
+  }
 }
 @media (max-width: 600px) {
   #flashboard-landing .fb-steps {
@@ -2001,7 +2025,7 @@
     align-items: stretch;
     text-align: left;
     gap: 12px;
-    bottom: 76px;
+    bottom: calc(80px + env(safe-area-inset-bottom));
   }
   .fb-cookie-btn {
     width: 100%;
