@@ -1,5 +1,5 @@
 import Icon from "@/components/ui/icon";
-import { Placement, PAY_LABELS, PAY_COLORS, VIDEO_LABELS, money } from "./mediaPlanTypes";
+import { Placement, PAY_LABELS, PAY_COLORS, VIDEO_LABELS } from "./mediaPlanTypes";
 
 interface PlanTableProps {
   items: Placement[];
@@ -9,7 +9,6 @@ interface PlanTableProps {
 }
 
 export default function PlanTable({ items, daysInMonth, capacity, load }: PlanTableProps) {
-  const totalAmount = items.reduce((s, i) => s + i.amountMonth, 0);
   const rest = load.map(l => Math.max(capacity - l, 0));
 
   return (
@@ -25,7 +24,6 @@ export default function PlanTable({ items, daysInMonth, capacity, load }: PlanTa
             <th className="text-center font-medium py-2 px-2">Хрон.</th>
             <th className="text-left font-medium py-2 px-2">Ролик</th>
             <th className="text-center font-medium py-2 px-2">Дней</th>
-            <th className="text-right font-medium py-2 px-2 whitespace-nowrap">Сумма, ₽</th>
             {Array.from({ length: daysInMonth }, (_, i) => (
               <th key={i} className="font-medium py-2 w-6 text-center text-[9px] text-slate-400">
                 {i + 1}
@@ -72,9 +70,6 @@ export default function PlanTable({ items, daysInMonth, capacity, load }: PlanTa
                 )}
               </td>
               <td className="py-1.5 px-2 text-center text-slate-700">{it.daysCount || "—"}</td>
-              <td className="py-1.5 px-2 text-right font-semibold text-slate-900 whitespace-nowrap">
-                {it.amountMonth ? money(it.amountMonth) : "—"}
-              </td>
               {Array.from({ length: daysInMonth }, (_, i) => {
                 const sec = it.daySeconds[i] || 0;
                 return (
@@ -96,7 +91,6 @@ export default function PlanTable({ items, daysInMonth, capacity, load }: PlanTa
           <tr className="border-t-2 border-slate-300 font-semibold text-slate-900 bg-slate-50">
             <td className="py-2 pr-2 sticky left-0 bg-slate-50 z-10">Итого загрузка</td>
             <td colSpan={5} />
-            <td className="py-2 px-2 text-right whitespace-nowrap">{money(totalAmount)}</td>
             {load.map((sec, i) => (
               <td key={i} className="text-center text-[9px] w-6">
                 {sec}
@@ -105,7 +99,7 @@ export default function PlanTable({ items, daysInMonth, capacity, load }: PlanTa
           </tr>
           <tr className="text-slate-500 bg-slate-50">
             <td className="py-1.5 pr-2 sticky left-0 bg-slate-50 z-10 font-medium">Остаток времени</td>
-            <td colSpan={6} />
+            <td colSpan={5} />
             {rest.map((sec, i) => (
               <td key={i} className="text-center text-[9px] w-6 text-emerald-700">
                 {sec}
@@ -114,7 +108,7 @@ export default function PlanTable({ items, daysInMonth, capacity, load }: PlanTa
           </tr>
           <tr className="text-slate-500 bg-slate-50">
             <td className="py-1.5 pr-2 sticky left-0 bg-slate-50 z-10 font-medium">% заполнения</td>
-            <td colSpan={6} />
+            <td colSpan={5} />
             {load.map((sec, i) => {
               const pct = capacity ? Math.round((sec / capacity) * 100) : 0;
               return (

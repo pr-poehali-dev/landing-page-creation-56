@@ -3,8 +3,7 @@ import func2url from "../../../backend/func2url.json";
 import Icon from "@/components/ui/icon";
 import PlanTable from "./PlanTable";
 import PlanLoadGrid from "./PlanLoadGrid";
-import RevenueSummary from "./RevenueSummary";
-import { MediaPlanData, money, monthTitle } from "./mediaPlanTypes";
+import { MediaPlanData, monthTitle } from "./mediaPlanTypes";
 
 interface MediaPlanPanelProps {
   token: string;
@@ -12,7 +11,6 @@ interface MediaPlanPanelProps {
 
 export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<"plan" | "revenue">("plan");
   const [data, setData] = useState<MediaPlanData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -96,7 +94,6 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
     setPeriod({ year: d.getFullYear(), month: d.getMonth() + 1 });
   }
 
-  const monthAmount = data ? data.items.reduce((s, i) => s + i.amountMonth, 0) : 0;
   const hasData = data && data.periods.length > 0;
 
   return (
@@ -112,27 +109,13 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
               <Icon name={open ? "ChevronUp" : "ChevronDown"} size={15} className="text-slate-400" />
             </div>
             <div className="text-xs text-slate-500 mt-0.5">
-              Загрузка экрана по секундам, ролики по месяцам и сводка выручки
+              Загрузка экрана по секундам и ролики по месяцам
             </div>
           </div>
         </button>
 
         {open && (
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1 bg-slate-100 rounded-full p-1">
-              <button
-                onClick={() => setTab("plan")}
-                className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${tab === "plan" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
-              >
-                Медиаплан
-              </button>
-              <button
-                onClick={() => setTab("revenue")}
-                className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${tab === "revenue" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
-              >
-                Выручка
-              </button>
-            </div>
             <button
               onClick={() => runImport(true)}
               disabled={importing}
@@ -192,7 +175,7 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
             </div>
           )}
 
-          {!loading && hasData && tab === "plan" && (
+          {!loading && hasData && (
             <>
               <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
                 <div className="flex items-center gap-1">
@@ -213,8 +196,7 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
                   </button>
                 </div>
                 <div className="text-xs text-slate-500">
-                  {data!.items.length} роликов · выручка месяца{" "}
-                  <b className="text-slate-900">{money(monthAmount)} ₽</b>
+                  {data!.items.length} роликов в месяце
                 </div>
                 <div className="flex flex-wrap gap-1 print:hidden">
                   {data!.periods.map(p => (
@@ -254,10 +236,6 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
                 </div>
               )}
             </>
-          )}
-
-          {!loading && hasData && tab === "revenue" && (
-            <RevenueSummary revenue={data!.revenue} planTotals={data!.planTotals} />
           )}
         </div>
       )}
