@@ -220,7 +220,7 @@ def handler(event: dict, context) -> dict:
         consent_val = 'NULL'
         consent_ip_val = 'NULL'
         consent_text_val = 'NULL'
-        if consent_given and source == 'form':
+        if consent_given and source.startswith('form'):
             req_ctx = event.get('requestContext') or {}
             identity = req_ctx.get('identity') or {}
             raw_headers = event.get('headers') or {}
@@ -251,8 +251,11 @@ def handler(event: dict, context) -> dict:
         cur.execute(query)
         lead_id = cur.fetchone()[0]
         log_event(cur, lead_id, 'created',
-                  'Добавлена вручную' if source == 'manual' else 'Заявка с сайта')
-        if consent_given and source == 'form':
+                  'Добавлена вручную' if source == 'manual'
+                  else 'Заявка с сайта, отправлена в Telegram' if source == 'form_tg'
+                  else 'Заявка с сайта, отправлена на почту' if source == 'form_mail'
+                  else 'Заявка с сайта')
+        if consent_given and source.startswith('form'):
             log_event(cur, lead_id, 'consent',
                       f"Согласие на обработку персональных данных получено. IP: {client_ip or 'не определён'}")
         conn.commit()

@@ -5,6 +5,7 @@ import SendDocButton from "./SendDocButton";
 import LeadHistory from "./LeadHistory";
 import ConsentBadge from "./ConsentBadge";
 import PaymentSchedule from "./PaymentSchedule";
+import SourceBadge from "./SourceBadge";
 import LeadActions from "./LeadActions";
 
 interface LeadCardProps {
@@ -82,12 +83,7 @@ export default function LeadCard({
             {l.name}
           </div>
           {l.company && <div className="text-slate-500 text-sm">{l.company}</div>}
-          {l.source === "manual" && (
-            <div className="inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-100 rounded-full px-2 py-0.5 mt-1">
-              <Icon name="PhoneCall" size={10} />
-              Добавлена вручную
-            </div>
-          )}
+          <SourceBadge source={l.source} />
           {l.phoneHidden ? (
             <button
               onClick={() => revealPhone(l.id)}

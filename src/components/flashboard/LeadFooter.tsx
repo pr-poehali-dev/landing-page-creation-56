@@ -117,7 +117,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       days: days ? Number(days) : null,
       totalPrice: estimate ? estimate.total : null,
       startDate: startDate || null,
-      source: "form",
+      source: via === "tg" ? "form_tg" : "form_mail",
       consent: true,
       consentText: `${CONSENT_DATA} ${CONSENT_POLICY} (Политика в редакции от ${PRIVACY_UPDATED})`,
     };
