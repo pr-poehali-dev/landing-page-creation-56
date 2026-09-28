@@ -8,7 +8,6 @@ interface LeadActionsProps {
   openDealTerms: (l: Lead) => void;
   generateContract: (id: number) => void;
   generatingId: number | null;
-  setConfirmDeleteId: (id: number | null) => void;
 }
 
 interface Action {
@@ -27,7 +26,6 @@ export default function LeadActions({
   openDealTerms,
   generateContract,
   generatingId,
-  setConfirmDeleteId,
 }: LeadActionsProps) {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -147,17 +145,6 @@ export default function LeadActions({
                 {a.label}
               </button>
             ))}
-            <div className="border-t border-slate-100 my-1" />
-            <button
-              onClick={() => {
-                setConfirmDeleteId(l.id);
-                setOpen(false);
-              }}
-              className="w-full text-left text-sm px-3 py-2 flex items-center gap-2 text-rose-600 hover:bg-rose-50 transition"
-            >
-              <Icon name="Trash2" size={15} className="shrink-0" />
-              Удалить заявку
-            </button>
           </div>
         )}
       </div>

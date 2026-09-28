@@ -103,7 +103,16 @@ export default function LeadCard({
         </div>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
-          <div className="text-xs text-slate-400">{formatDate(l.createdAt)}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-xs text-slate-400">{formatDate(l.createdAt)}</div>
+            <button
+              onClick={() => setConfirmDeleteId(l.id)}
+              title="Удалить заявку"
+              className="text-slate-300 hover:text-rose-600 transition"
+            >
+              <Icon name="Trash2" size={15} />
+            </button>
+          </div>
           <select
             value={l.status}
             disabled={updating === l.id}
@@ -268,7 +277,6 @@ export default function LeadCard({
         openDealTerms={openDealTerms}
         generateContract={generateContract}
         generatingId={generatingId}
-        setConfirmDeleteId={setConfirmDeleteId}
       />
       {contractError[l.id] && <div className="text-red-600 text-xs mt-2">{contractError[l.id]}</div>}
 
