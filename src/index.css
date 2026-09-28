@@ -834,6 +834,33 @@ html {
 #flashboard-landing .fb-plan .fb-btn {
   width: 100%;
   text-align: center;
+  padding: 13px 20px;
+  font-size: 15px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f6516b, #e5314f);
+  border-color: rgba(190, 18, 60, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 18px -11px rgba(225, 29, 72, 0.5);
+}
+#flashboard-landing .fb-plan .fb-btn:hover {
+  filter: brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 12px 24px -13px rgba(225, 29, 72, 0.55);
+}
+#flashboard-landing .fb-plan .fb-btn.fb-dark {
+  background: #fff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+  font-weight: 600;
+  box-shadow: none;
+}
+#flashboard-landing .fb-plan .fb-btn.fb-dark:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  filter: none;
+  box-shadow: none;
 }
 #flashboard-landing .fb-fine {
   margin-top: 30px;
