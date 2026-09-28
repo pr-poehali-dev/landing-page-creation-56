@@ -100,7 +100,7 @@ def esc_sql(v):
 
 
 def sync_placements(cur, lead_id):
-    """Пересобирает строки медиаплана для сделки по её условиям размещения"""
+    """Пересобирает строки календаря размещения для сделки по её условиям размещения"""
     cur.execute(
         "SELECT name, company, status, start_date, end_date, duration, "
         "placement_amount, total_price, paid_amount "
@@ -622,7 +622,7 @@ def handler(event: dict, context) -> dict:
             months = sync_placements(cur, lead_id)
             if months > 0:
                 log_event(cur, lead_id, 'mediaplan',
-                          f"Ролик в медиаплане: {months} мес.")
+                          f"Ролик в календаре размещения: {months} мес.")
 
         conn.commit()
         cur.close()

@@ -19,7 +19,7 @@ REVENUE = {
 
 
 def sync_lead(cur, lead_id):
-    """Раскладывает сделку по месяцам медиаплана"""
+    """Раскладывает сделку по месяцам календаря размещения"""
     cur.execute(
         "SELECT name, company, status, start_date, end_date, duration, "
         "placement_amount, total_price, paid_amount "
@@ -100,7 +100,7 @@ def session_ok(event):
 
 
 def handler(event: dict, context) -> dict:
-    """Разовый импорт медиаплана из Excel-файла в базу: размещения по месяцам и факт выручки прошлых лет"""
+    """Разовый импорт календаря размещения из Excel-файла в базу: размещения по месяцам и факт выручки прошлых лет"""
     cors = {'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-Session-Token'}

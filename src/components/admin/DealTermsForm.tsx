@@ -125,9 +125,9 @@ export default function DealTermsForm({ form, setForm, onSave, onCancel, saving,
         {form.startDate && form.endDate && Number(form.duration) > 0 && (
           <div className="sm:col-span-2 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2 text-xs text-indigo-900">
             {leadStatus && ["contract", "payment", "live", "completed"].includes(leadStatus) ? (
-              <>Ролик встанет в медиаплан: {form.duration} сек в день с {form.startDate.split("-").reverse().join(".")} по {form.endDate.split("-").reverse().join(".")}</>
+              <>Ролик встанет в календарь размещения: {form.duration} сек в день с {form.startDate.split("-").reverse().join(".")} по {form.endDate.split("-").reverse().join(".")}</>
             ) : (
-              <>Чтобы ролик попал в медиаплан и занял секунды на экране, переведите сделку в статус «Договор» или дальше</>
+              <>Чтобы ролик попал в календарь размещения и занял секунды на экране, переведите сделку в статус «Договор» или дальше</>
             )}
           </div>
         )}

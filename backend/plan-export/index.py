@@ -173,7 +173,7 @@ def session_ok(event):
 
 
 def handler(event: dict, context) -> dict:
-    """Выгружает медиаплан размещений в Excel в привычном формате: лист на каждый месяц с сеткой дней и загрузкой экрана"""
+    """Выгружает календарь размещения в Excel в привычном формате: лист на каждый месяц с сеткой дней и загрузкой экрана"""
     method = event.get('httpMethod', 'POST')
     cors = {'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -185,7 +185,7 @@ def handler(event: dict, context) -> dict:
         return {'statusCode': 403, 'headers': {**cors, 'Content-Type': 'application/json'},
                 'body': json.dumps({'error': 'Доступ запрещён'}, ensure_ascii=False)}
 
-    log_export(event, 'Выгрузка медиаплана в Excel')
+    log_export(event, 'Выгрузка календаря размещения в Excel')
     body = json.loads(event.get('body', '{}'))
     only_year = body.get('year')
     only_month = body.get('month')
@@ -267,7 +267,7 @@ def handler(event: dict, context) -> dict:
     s3 = boto3.client('s3', endpoint_url='https://bucket.poehali.dev',
                       aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
                       aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
-    key = f"mediaplan/mediaplan_{int(time.time())}.xlsx"
+    key = f"mediaplan/kalendar-razmescheniya_{int(time.time())}.xlsx"
     s3.put_object(Bucket='files', Key=key, Body=data,
                   ContentType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"

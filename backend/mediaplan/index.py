@@ -59,7 +59,7 @@ SELECT_COLS = (
 
 
 def handler(event: dict, context) -> dict:
-    """Медиаплан размещений: список по месяцам, загрузка экрана в секундах, сводка выручки"""
+    """Календарь размещения: список по месяцам, загрузка экрана в секундах, сводка выручки"""
     method = event.get('httpMethod', 'GET')
     cors = {
         'Access-Control-Allow-Origin': '*',

@@ -28,7 +28,7 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
         const res = await fetch(`${func2url.mediaplan}?year=${year}&month=${month}`, {
           headers: { "X-Session-Token": token },
         });
-        if (!res.ok) throw new Error("Не удалось загрузить медиаплан");
+        if (!res.ok) throw new Error("Не удалось загрузить календарь размещения");
         setData(await res.json());
       } catch (e) {
         setError(e instanceof Error ? e.message : "Ошибка загрузки");
@@ -105,7 +105,7 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
           </div>
           <div className="min-w-0">
             <div className="font-semibold text-slate-900 text-base flex items-center gap-1.5">
-              Медиаплан размещений
+              Календарь размещения
               <Icon name={open ? "ChevronUp" : "ChevronDown"} size={15} className="text-slate-400" />
             </div>
             <div className="text-xs text-slate-500 mt-0.5">
@@ -119,7 +119,7 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
             <button
               onClick={() => runImport(true)}
               disabled={importing}
-              title="Подтянуть в медиаплан сделки из заявок"
+              title="Подтянуть в календарь сделки из заявок"
               className="text-xs text-slate-500 hover:text-indigo-700 transition flex items-center gap-1 border border-slate-200 rounded-lg px-3 py-2 disabled:opacity-50"
             >
               <Icon name="RefreshCw" size={14} />
@@ -156,12 +156,12 @@ export default function MediaPlanPanel({ token }: MediaPlanPanelProps) {
             </div>
           )}
 
-          {loading && <div className="text-sm text-slate-400 py-6 text-center">Загружаем медиаплан…</div>}
+          {loading && <div className="text-sm text-slate-400 py-6 text-center">Загружаем календарь…</div>}
 
           {!loading && !hasData && (
             <div className="bg-slate-50 rounded-xl p-6 text-center">
               <Icon name="FileSpreadsheet" size={32} className="mx-auto text-slate-300 mb-2" />
-              <div className="text-sm text-slate-600 font-medium">Медиаплан ещё не заполнен</div>
+              <div className="text-sm text-slate-600 font-medium">Календарь размещения ещё не заполнен</div>
               <div className="text-xs text-slate-500 mt-1 mb-3">
                 Можно перенести данные из вашего Excel-файла за 2026 год одним нажатием
               </div>
