@@ -8,6 +8,7 @@ import LeadFooter from "@/components/flashboard/LeadFooter";
 import StickyBar from "@/components/flashboard/StickyBar";
 import Reveal from "@/components/flashboard/Reveal";
 import { CalcPreset } from "@/components/flashboard/pricing";
+import { highlightForm } from "@/components/flashboard/scrollToLead";
 
 const Index = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -30,12 +31,31 @@ const Index = () => {
     if (!hash || hash === "#top") return;
 
     let ticks = 0;
+    let stableFor = 0;
+    let lastTop = Number.NaN;
+
+    const finish = () => {
+      window.clearInterval(timer);
+      if (hash === "#lead") highlightForm();
+    };
+
     const timer = window.setInterval(() => {
       const el =
         (hash === "#lead" ? document.getElementById("lead-form") : null) ||
         document.querySelector(hash);
-      if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
-      if (++ticks > 30) window.clearInterval(timer);
+
+      if (el) {
+        el.scrollIntoView({ behavior: "auto", block: "start" });
+        const top = Math.round(el.getBoundingClientRect().top + window.scrollY);
+        stableFor = top === lastTop ? stableFor + 1 : 0;
+        lastTop = top;
+        if (stableFor >= 3) {
+          finish();
+          return;
+        }
+      }
+
+      if (++ticks > 30) finish();
     }, 150);
 
     const stop = () => window.clearInterval(timer);

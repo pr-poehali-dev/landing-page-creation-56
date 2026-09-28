@@ -1308,6 +1308,49 @@ html {
 #flashboard-landing .fb-leadR {
   background: var(--fb-surface);
   padding: 44px;
+  position: relative;
+}
+#flashboard-landing .fb-leadR::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 18px;
+  pointer-events: none;
+  opacity: 0;
+  border: 2px solid transparent;
+}
+#flashboard-landing .fb-leadR.fb-highlight::after {
+  animation: fb-lead-glow 2.4s ease-out forwards;
+}
+@keyframes fb-lead-glow {
+  0% {
+    opacity: 0;
+    border-color: rgba(244, 63, 94, 0);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+  }
+  18% {
+    opacity: 1;
+    border-color: rgba(244, 63, 94, 0.55);
+    box-shadow: 0 0 0 6px rgba(244, 63, 94, 0.12);
+  }
+  70% {
+    opacity: 1;
+    border-color: rgba(244, 63, 94, 0.45);
+    box-shadow: 0 0 0 5px rgba(244, 63, 94, 0.09);
+  }
+  100% {
+    opacity: 0;
+    border-color: rgba(244, 63, 94, 0);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #flashboard-landing .fb-leadR.fb-highlight::after {
+    animation: none;
+    opacity: 1;
+    border-color: rgba(244, 63, 94, 0.5);
+    box-shadow: 0 0 0 5px rgba(244, 63, 94, 0.1);
+  }
 }
 #flashboard-landing .fb-fld {
   margin-bottom: 18px;
