@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { scrollToLead } from "./scrollToLead";
 import { calcPlacement, plural, fmt, DURATIONS, MIN_DAYS, MAX_DAYS, CalcPreset } from "./pricing";
 
 interface CalculatorHowFaqProps {
@@ -57,8 +58,9 @@ export default function CalculatorHowFaq({ onApply }: CalculatorHowFaqProps) {
 
   const calc = useMemo(() => calcPlacement(dur, days), [dur, days]);
 
-  function handleApply() {
+  function handleApply(e: React.MouseEvent) {
     onApply?.({ duration: dur, days, price: calc.total, stamp: Date.now() });
+    scrollToLead(e);
   }
 
   return (

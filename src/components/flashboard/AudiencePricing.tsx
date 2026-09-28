@@ -1,3 +1,5 @@
+import { scrollToLead } from "./scrollToLead";
+
 const AUDIENCE_CARDS = [
   {
     icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 17h14M6 17l1.5-5.5A2 2 0 0 1 9.4 10h5.2a2 2 0 0 1 1.9 1.5L18 17M7 17v2m10-2v2M7.5 13.5h9" /></svg>,
@@ -113,7 +115,7 @@ export default function AudiencePricing() {
                 <ul>
                   {p.features.map((f, j) => <li key={j}>{f}</li>)}
                 </ul>
-                <a className={`fb-btn${p.hot ? "" : " fb-dark"}`} href="#lead">Оставить заявку</a>
+                <a className={`fb-btn${p.hot ? "" : " fb-dark"}`} href="#lead" onClick={scrollToLead}>Оставить заявку</a>
               </div>
             ))}
           </div>

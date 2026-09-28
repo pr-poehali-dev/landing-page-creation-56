@@ -31,7 +31,9 @@ const Index = () => {
 
     let ticks = 0;
     const timer = window.setInterval(() => {
-      const el = document.querySelector(hash);
+      const el =
+        (hash === "#lead" ? document.getElementById("lead-form") : null) ||
+        document.querySelector(hash);
       if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
       if (++ticks > 30) window.clearInterval(timer);
     }, 150);

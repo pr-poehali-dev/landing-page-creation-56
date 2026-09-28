@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import heroImage from "@/assets/flashboard-hero.jpg";
 import CountUp from "@/components/flashboard/CountUp";
+import { scrollToLead } from "./scrollToLead";
 
 interface HeroSectionProps {
   scrolled: boolean;
@@ -68,7 +69,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
           </nav>
           <div className="fb-hct">
             <a className="fb-tel" href="tel:+79089925020">+7 908 992 50 20</a>
-            <a className="fb-btn" href="#lead">Разместить рекламу</a>
+            <a className="fb-btn" href="#lead" onClick={scrollToLead}>Разместить рекламу</a>
           </div>
           <button className="fb-burger" aria-label="Меню" onClick={() => setMenuOpen(!menuOpen)}>
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
@@ -81,7 +82,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
             <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}>{l.label}</a>
           ))}
           <a href="tel:+79089925020" onClick={() => setMenuOpen(false)}><b>+7 908 992 50 20</b></a>
-          <a className="fb-btn" href="#lead" style={{ textAlign: "center" }} onClick={() => setMenuOpen(false)}>Разместить рекламу</a>
+          <a className="fb-btn" href="#lead" style={{ textAlign: "center" }} onClick={e => { setMenuOpen(false); scrollToLead(e); }}>Разместить рекламу</a>
         </div>
       </header>
 
@@ -92,7 +93,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
             <h1>Вашу рекламу увидят <span className="fb-grad"><CountUp target={30000} format={(n) => n.toLocaleString("ru-RU") + "+"} />{" "}человек</span> каждый день</h1>
             <p className="fb-sub">LED-экран 50 м² над входом в ТЦ «Изумруд Плаза». <b>Запуск за 1 день.</b></p>
             <div className="fb-cta">
-              <a className="fb-btn" href="#lead">Разместить рекламу — от 1 625 ₽/день</a>
+              <a className="fb-btn" href="#lead" onClick={scrollToLead}>Разместить рекламу — от 1 625 ₽/день</a>
               <a className="fb-btn fb-ghost" href="#calculator">Рассчитать стоимость</a>
             </div>
             <div className="fb-stats">

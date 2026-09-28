@@ -1,3 +1,5 @@
+import { scrollToLead } from "./scrollToLead";
+
 interface StickyBarProps {
   visible: boolean;
 }
@@ -11,7 +13,7 @@ export default function StickyBar({ visible }: StickyBarProps) {
       <a className="fb-sticky-btn fb-sticky-tg" href="https://t.me/izumrudvlpm" target="_blank" rel="noopener noreferrer" aria-label="Написать в Telegram">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
       </a>
-      <a className="fb-sticky-btn fb-sticky-lead" href="#lead">Оставить заявку</a>
+      <a className="fb-sticky-btn fb-sticky-lead" href="#lead" onClick={scrollToLead}>Оставить заявку</a>
     </div>
   );
 }

@@ -449,8 +449,14 @@ html {
   }
 }
 #flashboard-landing section[id],
-#flashboard-landing .fb-hero[id] {
+#flashboard-landing .fb-hero[id],
+#flashboard-landing #lead-form {
   scroll-margin-top: 76px;
+}
+@media (max-width: 960px) {
+  #flashboard-landing #lead-form {
+    scroll-margin-top: 72px;
+  }
 }
 #flashboard-landing .fb-kicker {
   color: var(--fb-rose);

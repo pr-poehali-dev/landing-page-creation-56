@@ -181,7 +181,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
               </a>
               <div className="fb-trust">Работаем с юридическими лицами и ИП. Договор, акты, отчёт о выходах — всё включено.</div>
             </div>
-            <div className="fb-leadR">
+            <div className="fb-leadR" id="lead-form">
               {sent ? (
                 <div className="fb-success">
                   <div className="fb-success-ic">
@@ -214,8 +214,8 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
               ) : (
                 <form onSubmit={e => send("tg", e)}>
                   <div className="fb-fld">
-                    <label>Ваше имя</label>
-                    <input type="text" required placeholder="Как к вам обращаться" value={name} onChange={e => setName(e.target.value)} />
+                    <label htmlFor="lead-name">Ваше имя</label>
+                    <input id="lead-name" type="text" required placeholder="Как к вам обращаться" value={name} onChange={e => setName(e.target.value)} />
                   </div>
                   <div className="fb-fld">
                     <label>Телефон</label>
