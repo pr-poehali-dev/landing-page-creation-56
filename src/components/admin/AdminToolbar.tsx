@@ -1,14 +1,8 @@
 import Icon from "@/components/ui/icon";
-import { STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 
 interface AdminToolbarProps {
   leadsCount: number;
   loading: boolean;
-  counts: Record<string, number>;
-  statusFilter: string;
-  setStatusFilter: (v: string) => void;
-  sortBy: "date" | "price";
-  setSortBy: (v: "date" | "price") => void;
   onLogout: () => void;
   onChangePassword: () => void;
   staffName?: string;
@@ -21,11 +15,6 @@ interface AdminToolbarProps {
 export default function AdminToolbar({
   leadsCount,
   loading,
-  counts,
-  statusFilter,
-  setStatusFilter,
-  sortBy,
-  setSortBy,
   onLogout,
   onChangePassword,
   staffName,
@@ -95,43 +84,6 @@ export default function AdminToolbar({
         </div>
       )}
 
-      {!loading && leadsCount > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setStatusFilter("all")}
-              className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === "all" ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"}`}
-            >
-              Все ({counts.all})
-            </button>
-            {STATUS_ORDER.map(s => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${statusFilter === s ? "bg-slate-900 text-white" : `${STATUS_COLORS[s]} hover:opacity-80`}`}
-              >
-                {STATUS_LABELS[s]} ({counts[s]})
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-full p-1">
-            <button
-              onClick={() => setSortBy("date")}
-              className={`text-xs font-medium rounded-full px-3 py-1.5 transition flex items-center gap-1 ${sortBy === "date" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
-            >
-              <Icon name="Clock" size={13} />
-              По дате
-            </button>
-            <button
-              onClick={() => setSortBy("price")}
-              className={`text-xs font-medium rounded-full px-3 py-1.5 transition flex items-center gap-1 ${sortBy === "price" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
-            >
-              <Icon name="ArrowDownWideNarrow" size={13} />
-              По сумме
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

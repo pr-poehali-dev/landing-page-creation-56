@@ -20,7 +20,6 @@ import {
   EMPTY_REQUISITES,
   DealTerms,
   EMPTY_DEAL_TERMS,
-  STATUS_ORDER,
   STATUS_LABELS,
 } from "@/components/admin/adminTypes";
 
@@ -37,8 +36,6 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState<number | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"date" | "price">("date");
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("fb-session-token"));
   const [staffName, setStaffName] = useState(() => localStorage.getItem("fb-staff-name") || "");
   const [staffRole, setStaffRole] = useState(() => localStorage.getItem("fb-staff-role") || "manager");
@@ -64,7 +61,7 @@ const Admin = () => {
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [search, statusFilter, sortBy]);
+  }, [search]);
 
   const editingLead = leads.find(l => l.id === editingId) || null;
   const termsLead = leads.find(l => l.id === editingTermsId) || null;
@@ -289,35 +286,23 @@ const Admin = () => {
     }
   }
 
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { all: leads.length };
-    for (const s of STATUS_ORDER) c[s] = leads.filter(l => l.status === s).length;
-    return c;
-  }, [leads]);
-
   const filteredLeads = useMemo(() => {
-    const byStatus = statusFilter === "all" ? leads : leads.filter(l => l.status === statusFilter);
-
     const norm = (s: string) => s.toLowerCase().replace(/ё/g, "е");
     const q = norm(search.trim());
     const digits = q.replace(/\D/g, "");
     const base = !q
-      ? byStatus
-      : byStatus.filter(l => {
+      ? leads
+      : leads.filter(l => {
           const haystack = norm([l.name, l.company, l.email].filter(Boolean).join(" "));
           if (haystack.includes(q)) return true;
           if (digits.length >= 3 && l.phone.replace(/\D/g, "").includes(digits)) return true;
           return false;
         });
 
-    const sorted = [...base];
-    if (sortBy === "price") {
-      sorted.sort((a, b) => (b.totalPrice || 0) - (a.totalPrice || 0));
-    } else {
-      sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-    }
-    return sorted;
-  }, [leads, statusFilter, sortBy, search]);
+    return [...base].sort(
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }, [leads, search]);
 
   function withEvent(l: Lead, type: string, details: string): Lead {
     return { ...l, events: [{ type, details, createdAt: new Date().toISOString() }, ...(l.events || [])] };
@@ -493,11 +478,6 @@ const Admin = () => {
           onChangePassword={() => setPassModal(true)}
           leadsCount={leads.length}
           loading={loading}
-          counts={counts}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
           onLogout={handleLogout}
           staffName={staffName}
           staffRole={staffRole}
@@ -524,10 +504,8 @@ const Admin = () => {
 
         {!loading && leads.length > 0 && filteredLeads.length === 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <Icon name={search ? "SearchX" : "Filter"} size={40} className="mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">
-              {search ? `По запросу «${search}» ничего не найдено` : "Нет заявок с таким статусом"}
-            </p>
+            <Icon name="SearchX" size={40} className="mx-auto text-slate-300 mb-3" />
+            <p className="text-slate-500">По запросу «{search}» ничего не найдено</p>
             {search && (
               <button
                 onClick={() => setSearch("")}
