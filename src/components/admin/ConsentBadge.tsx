@@ -21,32 +21,21 @@ export default function ConsentBadge({ lead, formatDate }: ConsentBadgeProps) {
   }
 
   return (
-    <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-      <div className="flex items-start gap-2">
-        <Icon name="ShieldCheck" size={14} className="text-emerald-600 mt-0.5 shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="text-xs font-medium text-emerald-900">Согласие на обработку данных получено</div>
-          <div className="text-xs text-emerald-700 mt-0.5">
-            {formatDate(lead.consentAt)}
-            {lead.consentIp && <> · IP {lead.consentIp}</>}
-          </div>
-          {lead.consentText && (
-            <>
-              <button
-                onClick={() => setOpen(v => !v)}
-                className="text-xs text-emerald-700 underline mt-1 hover:text-emerald-900 transition"
-              >
-                {open ? "Скрыть текст согласия" : "Показать текст согласия"}
-              </button>
-              {open && (
-                <div className="mt-2 bg-white border border-emerald-200 rounded-md p-2 text-xs text-slate-600 leading-relaxed">
-                  {lead.consentText}
-                </div>
-              )}
-            </>
-          )}
+    <div className="mt-3">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="text-xs text-emerald-700 hover:text-emerald-900 transition flex items-center gap-1.5"
+      >
+        <Icon name="ShieldCheck" size={13} className="text-emerald-600" />
+        Согласие получено {formatDate(lead.consentAt)}
+        <Icon name={open ? "ChevronUp" : "ChevronDown"} size={12} className="text-emerald-500" />
+      </button>
+      {open && (
+        <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-900 leading-relaxed">
+          {lead.consentIp && <div className="text-emerald-700 mb-1">IP {lead.consentIp}</div>}
+          {lead.consentText}
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -42,17 +42,7 @@ export default function LeadReadiness({ lead, openRequisites, openDealTerms }: L
   );
 
   if (missing.length === 0) {
-    return (
-      <>
-        {suspicious.length === 0 && (
-          <div className="mt-3 flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
-            <Icon name="CircleCheck" size={14} className="shrink-0" />
-            Все данные заполнены — договор сформируется полностью
-          </div>
-        )}
-        {suspiciousBlock}
-      </>
-    );
+    return <>{suspiciousBlock}</>;
   }
 
   const isBlocking =

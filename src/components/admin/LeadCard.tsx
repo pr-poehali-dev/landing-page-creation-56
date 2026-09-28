@@ -5,6 +5,7 @@ import SendDocButton from "./SendDocButton";
 import LeadHistory from "./LeadHistory";
 import ConsentBadge from "./ConsentBadge";
 import PaymentSchedule from "./PaymentSchedule";
+import LeadActions from "./LeadActions";
 
 interface LeadCardProps {
   lead: Lead;
@@ -102,16 +103,7 @@ export default function LeadCard({
         </div>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2">
-            <div className="text-xs text-slate-400">{formatDate(l.createdAt)}</div>
-            <button
-              onClick={() => setConfirmDeleteId(l.id)}
-              title="Удалить заявку"
-              className="text-slate-300 hover:text-rose-600 transition"
-            >
-              <Icon name="Trash2" size={15} />
-            </button>
-          </div>
+          <div className="text-xs text-slate-400">{formatDate(l.createdAt)}</div>
           <select
             value={l.status}
             disabled={updating === l.id}
@@ -198,7 +190,7 @@ export default function LeadCard({
           {l.totalPrice && <span className="bg-rose-100 text-rose-700 rounded-full px-3 py-1 font-semibold">{l.totalPrice.toLocaleString("ru-RU")} ₽</span>}
         </div>
       )}
-      {l.totalPrice && (
+      {l.totalPrice && (l.payments || []).length === 0 && (
         <div className="mt-3 bg-slate-50 rounded-lg p-3">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -270,33 +262,14 @@ export default function LeadCard({
 
       <LeadReadiness lead={l} openRequisites={openRequisites} openDealTerms={openDealTerms} />
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        <a href={`tel:${l.phone.replace(/\D/g, "")}`} className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition">Позвонить</a>
-        <a href="https://t.me/izumrudvlpm" target="_blank" rel="noopener noreferrer" className="text-sm bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600 transition">Telegram</a>
-        <button
-          onClick={() => openRequisites(l)}
-          className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5"
-        >
-          <Icon name="FileText" size={15} />
-          {l.inn ? "Реквизиты" : "Добавить реквизиты"}
-        </button>
-        <button
-          onClick={() => openDealTerms(l)}
-          className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5"
-        >
-          <Icon name="CalendarRange" size={15} />
-          {l.totalPrice ? "Условия" : "Указать условия"}
-        </button>
-        <button
-          onClick={() => generateContract(l.id)}
-          disabled={generatingId === l.id || (!l.inn && !l.legalAddress)}
-          title={!l.inn && !l.legalAddress ? "Заполните реквизиты клиента — ИНН или юридический адрес" : ""}
-          className="text-sm bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <Icon name="FileSignature" size={15} />
-          {generatingId === l.id ? "Формируем…" : "Сформировать договор"}
-        </button>
-      </div>
+      <LeadActions
+        lead={l}
+        openRequisites={openRequisites}
+        openDealTerms={openDealTerms}
+        generateContract={generateContract}
+        generatingId={generatingId}
+        setConfirmDeleteId={setConfirmDeleteId}
+      />
       {contractError[l.id] && <div className="text-red-600 text-xs mt-2">{contractError[l.id]}</div>}
 
       {l.documents.length > 0 && (
