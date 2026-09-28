@@ -7,13 +7,8 @@ import ChangePasswordModal from "@/components/admin/ChangePasswordModal";
 import SecurityPanel from "@/components/admin/SecurityPanel";
 import AdminToolbar from "@/components/admin/AdminToolbar";
 import LeadCard from "@/components/admin/LeadCard";
-import BackupPanel from "@/components/admin/BackupPanel";
-import HelpPanel from "@/components/admin/HelpPanel";
 import NewLeadForm from "@/components/admin/NewLeadForm";
-import TestDataPanel from "@/components/admin/TestDataPanel";
 import MediaPlanPanel from "@/components/admin/MediaPlanPanel";
-import ClientBasePanel from "@/components/admin/ClientBasePanel";
-import MonitoringPanel from "@/components/admin/MonitoringPanel";
 import AdminModal from "@/components/admin/AdminModal";
 import RequisitesForm from "@/components/admin/RequisitesForm";
 import DealTermsForm from "@/components/admin/DealTermsForm";
@@ -413,15 +408,6 @@ const Admin = () => {
     }
   }
 
-  async function cleanTestLeads(ids: number[]) {
-    const res = await fetch(`${func2url.leads}?leadIds=${ids.join(",")}`, {
-      method: "DELETE",
-      headers: { "X-Session-Token": token || "" },
-    });
-    if (!res.ok) throw new Error("Не удалось удалить заявки");
-    setLeads(prev => prev.filter(l => !ids.includes(l.id)));
-  }
-
   async function savePayments(leadId: number, rows: LeadPayment[]) {
     const res = await fetch(func2url.leads, {
       method: "PATCH",
@@ -527,14 +513,9 @@ const Admin = () => {
           foundCount={filteredLeads.length}
         />
 
-        {!loading && <HelpPanel />}
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && <MediaPlanPanel token={token || ""} />}
-        {!loading && <ClientBasePanel token={token || ""} onLeadCreated={fetchLeads} />}
-        {!loading && <MonitoringPanel token={token || ""} />}
-        {!loading && <TestDataPanel leads={leads} onCleaned={cleanTestLeads} />}
         {!loading && token && <SecurityPanel token={token} role={staffRole} onRestored={fetchLeads} />}
-        {!loading && token && staffRole === "director" && <BackupPanel token={token} />}
 
         {loading && <div className="text-slate-500">Загружаем…</div>}
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-4">{error}</div>}
