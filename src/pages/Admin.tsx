@@ -22,7 +22,6 @@ import {
   EMPTY_DEAL_TERMS,
   STATUS_ORDER,
   STATUS_LABELS,
-  ACTIVE_STATUSES,
 } from "@/components/admin/adminTypes";
 
 const PAGE_SIZE = 20;
@@ -296,11 +295,6 @@ const Admin = () => {
     return c;
   }, [leads]);
 
-  const activeSum = useMemo(
-    () => leads.filter(l => ACTIVE_STATUSES.includes(l.status)).reduce((sum, l) => sum + (l.totalPrice || 0), 0),
-    [leads]
-  );
-
   const filteredLeads = useMemo(() => {
     const byStatus = statusFilter === "all" ? leads : leads.filter(l => l.status === statusFilter);
 
@@ -499,7 +493,6 @@ const Admin = () => {
           onChangePassword={() => setPassModal(true)}
           leadsCount={leads.length}
           loading={loading}
-          activeSum={activeSum}
           counts={counts}
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}

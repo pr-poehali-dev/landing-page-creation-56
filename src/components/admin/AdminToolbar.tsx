@@ -4,7 +4,6 @@ import { STATUS_LABELS, STATUS_COLORS, STATUS_ORDER } from "./adminTypes";
 interface AdminToolbarProps {
   leadsCount: number;
   loading: boolean;
-  activeSum: number;
   counts: Record<string, number>;
   statusFilter: string;
   setStatusFilter: (v: string) => void;
@@ -22,7 +21,6 @@ interface AdminToolbarProps {
 export default function AdminToolbar({
   leadsCount,
   loading,
-  activeSum,
   counts,
   statusFilter,
   setStatusFilter,
@@ -66,16 +64,6 @@ export default function AdminToolbar({
           </button>
         </div>
       </div>
-
-      {!loading && leadsCount > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mb-4 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide font-medium">В работе (без учёта завершённых и потерянных)</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">{activeSum.toLocaleString("ru-RU")} ₽</div>
-          </div>
-          <div className="text-sm text-slate-500">{counts["new"] + counts["estimate"] + counts["contract"] + counts["payment"] + counts["live"]} активных сделок</div>
-        </div>
-      )}
 
       {!loading && leadsCount > 0 && (
         <div className="relative mb-3">
