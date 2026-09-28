@@ -39,6 +39,8 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [tgLink, setTgLink] = useState("");
+  const [mailLink, setMailLink] = useState("");
+  const [channel, setChannel] = useState<"tg" | "mail">("tg");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -57,21 +59,54 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       ? `${new Date(startDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })} — ${new Date(endDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}`
       : "";
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!consent) {
-      setError("Отметьте согласие на обработку персональных данных");
-      return;
-    }
-    if (!policyAccepted) {
-      setError("Подтвердите, что ознакомились с политикой конфиденциальности");
-      return;
+  function buildMessage() {
+    return (
+      `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}` +
+      `\nХронометраж: ${duration ? duration + " сек" : "—"}` +
+      `\nСрок: ${days ? days + " дн." + (period ? ` (${period})` : "") : "—"}` +
+      `\nПредварительно: ${estimate ? fmt(estimate.total) : "—"}` +
+      `\nСтарт: ${startDate ? new Date(startDate).toLocaleDateString("ru-RU") : "—"}` +
+      `\nКомментарий: ${comment || "—"}`
+    );
+  }
+
+  function validate() {
+    if (!name.trim()) {
+      setError("Укажите, как к вам обращаться");
+      return false;
     }
     if (phone.replace(/\D/g, "").length < 11) {
       setError("Введите телефон полностью");
-      return;
+      return false;
     }
+    if (!consent) {
+      setError("Отметьте согласие на обработку персональных данных");
+      return false;
+    }
+    if (!policyAccepted) {
+      setError("Подтвердите, что ознакомились с политикой конфиденциальности");
+      return false;
+    }
+    return true;
+  }
+
+  async function send(via: "tg" | "mail", e: React.FormEvent) {
+    e.preventDefault();
+    if (sending) return;
+    if (!validate()) return;
+
+    const message = buildMessage();
+    const tgUrl = `${COMPANY.telegramHref}?text=${encodeURIComponent(message)}`;
+    const mailUrl =
+      `mailto:${COMPANY.email}` +
+      `?subject=${encodeURIComponent("Заявка с сайта Флэшборд — " + (name || "без имени"))}` +
+      `&body=${encodeURIComponent(message)}`;
+    const target = via === "tg" ? tgUrl : mailUrl;
+
+    const popup = via === "tg" ? window.open("", "_blank") : null;
+
     setError("");
+    setChannel(via);
     setSending(true);
 
     const payload = {
@@ -86,6 +121,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       consent: true,
       consentText: `${CONSENT_DATA} ${CONSENT_POLICY} (Политика в редакции от ${PRIVACY_UPDATED})`,
     };
+
     try {
       const res = await fetch(func2url.leads, {
         method: "POST",
@@ -93,16 +129,14 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("fail");
+
+      setTgLink(tgUrl);
+      setMailLink(mailUrl);
       setSent(true);
-      const text = encodeURIComponent(
-        `Заявка с сайта «Флэшборд»\nИмя: ${name}\nТелефон: ${phone}` +
-          `\nХронометраж: ${duration ? duration + " сек" : "—"}` +
-          `\nСрок: ${days ? days + " дн." + (period ? ` (${period})` : "") : "—"}` +
-          `\nПредварительно: ${estimate ? fmt(estimate.total) : "—"}` +
-          `\nСтарт: ${startDate ? new Date(startDate).toLocaleDateString("ru-RU") : "—"}` +
-          `\nКомментарий: ${comment || "—"}`
-      );
-      setTgLink(`${COMPANY.telegramHref}?text=${text}`);
+
+      if (popup) popup.location.href = target;
+      else window.location.href = target;
+
       setName("");
       setPhone("");
       setComment("");
@@ -112,7 +146,8 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
       setConsent(false);
       setPolicyAccepted(false);
     } catch {
-      setError("Не удалось отправить. Позвоните нам: +7 908 992 50 20");
+      if (popup) popup.close();
+      setError(`Не удалось отправить. Позвоните нам: ${COMPANY.phone}`);
     } finally {
       setSending(false);
     }
@@ -153,18 +188,31 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
                   </div>
                   <h3>Заявка принята</h3>
-                  <p>Мы сохранили ваши контакты и свяжемся в течение часа в рабочее время — пришлём смету и свободные даты.</p>
-                  {tgLink && (
+                  <p>
+                    Заявка сохранена у нас — свяжемся в течение часа в рабочее время.
+                    {channel === "tg"
+                      ? " Должен открыться Telegram с готовым сообщением."
+                      : " Должна открыться почтовая программа с готовым письмом."}
+                  </p>
+                  {channel === "tg" && tgLink && (
                     <a className="fb-btn fb-tg" href={tgLink} target="_blank" rel="noopener noreferrer">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
-                      Продолжить в Telegram
+                      Открыть Telegram
                     </a>
                   )}
-                  <div className="fb-success-hint">Откроется чат с готовым сообщением — просто нажмите «Отправить».</div>
-                  <button className="fb-btn fb-dark" onClick={() => { setSent(false); setTgLink(""); }}>Отправить ещё одну</button>
+                  {channel === "mail" && mailLink && (
+                    <a className="fb-btn fb-mail" href={mailLink}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 6 10-6" /></svg>
+                      Открыть письмо
+                    </a>
+                  )}
+                  <div className="fb-success-hint">
+                    Если окно не открылось — нажмите кнопку выше. Заявка у нас уже есть в любом случае.
+                  </div>
+                  <button className="fb-btn fb-dark" onClick={() => { setSent(false); setTgLink(""); setMailLink(""); }}>Отправить ещё одну</button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={e => send("tg", e)}>
                   <div className="fb-fld">
                     <label>Ваше имя</label>
                     <input type="text" required placeholder="Как к вам обращаться" value={name} onChange={e => setName(e.target.value)} />
@@ -251,14 +299,23 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                     </span>
                   </label>
                   {error && <div className="fb-formerr">{error}</div>}
-                  <button type="submit" className="fb-btn" disabled={sending || !consent || !policyAccepted}>
-                    {sending ? "Отправляем…" : "Получить смету за 1 час →"}
-                  </button>
-                  <a className="fb-btn fb-tg" href={COMPANY.telegramHref} target="_blank" rel="noopener noreferrer">
+                  <button type="submit" className="fb-btn fb-tg" disabled={sending}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
-                    Написать в Telegram
-                  </a>
-                  <div className="fb-pp">Заявка сохранится у нас. После отправки предложим продублировать её в Telegram. Мы не передаём контакты третьим лицам.</div>
+                    {sending && channel === "tg" ? "Отправляем…" : "Отправить заявку в Telegram"}
+                  </button>
+                  <button
+                    type="button"
+                    className="fb-btn fb-mail"
+                    disabled={sending}
+                    onClick={e => send("mail", e)}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 6 10-6" /></svg>
+                    {sending && channel === "mail" ? "Отправляем…" : "Отправить на почту"}
+                  </button>
+                  <div className="fb-pp">
+                    Любая кнопка сразу сохраняет заявку у нас — выберите, как вам удобнее продолжить общение.
+                    Мы не передаём контакты третьим лицам.
+                  </div>
                 </form>
               )}
             </div>
@@ -305,7 +362,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
             </div>
             <div className="fb-fr">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
-              <a href="https://t.me/izumrudvlpm">Telegram: @izumrudvlpm</a>
+              <a href="https://t.me/izumrudvlpm" target="_blank" rel="noopener noreferrer">Telegram: @izumrudvlpm</a>
             </div>
             <div className="fb-fr">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 6 10-6" /></svg>
