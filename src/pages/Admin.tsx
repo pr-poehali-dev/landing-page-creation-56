@@ -515,7 +515,9 @@ const Admin = () => {
 
         {!loading && <NewLeadForm onCreated={lead => setLeads(prev => [lead, ...prev])} />}
         {!loading && <MediaPlanPanel token={token || ""} />}
-        {!loading && token && <SecurityPanel token={token} role={staffRole} onRestored={fetchLeads} />}
+        {!loading && token && staffRole === "director" && (
+          <SecurityPanel token={token} onRestored={fetchLeads} />
+        )}
 
         {loading && <div className="text-slate-500">Загружаем…</div>}
         {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-4">{error}</div>}

@@ -13,11 +13,10 @@ import {
 
 interface SecurityPanelProps {
   token: string;
-  role: string;
   onRestored: () => void;
 }
 
-export default function SecurityPanel({ token, role, onRestored }: SecurityPanelProps) {
+export default function SecurityPanel({ token, onRestored }: SecurityPanelProps) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"log" | "team" | "trash">("log");
   const [entries, setEntries] = useState<AuditEntry[]>([]);
@@ -31,8 +30,6 @@ export default function SecurityPanel({ token, role, onRestored }: SecurityPanel
   const [info, setInfo] = useState("");
   const [filter, setFilter] = useState("all");
 
-  const isDirector = role === "director";
-
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -44,23 +41,21 @@ export default function SecurityPanel({ token, role, onRestored }: SecurityPanel
         setBackups(j.backups || []);
       }
 
-      if (isDirector) {
-        const res = await fetch(`${func2url.auth}?severity=${filter}&limit=150`, {
-          headers: { "X-Session-Token": token },
-        });
-        if (res.ok) {
-          const j = await res.json();
-          setEntries(j.entries || []);
-          setTeam(j.team || []);
-          setWarnings(j.warnings || 0);
-        }
+      const res = await fetch(`${func2url.auth}?severity=${filter}&limit=150`, {
+        headers: { "X-Session-Token": token },
+      });
+      if (res.ok) {
+        const j = await res.json();
+        setEntries(j.entries || []);
+        setTeam(j.team || []);
+        setWarnings(j.warnings || 0);
       }
     } catch {
       setError("Не удалось загрузить данные безопасности");
     } finally {
       setLoading(false);
     }
-  }, [token, isDirector, filter]);
+  }, [token, filter]);
 
   useEffect(() => {
     if (open) load();
@@ -102,7 +97,7 @@ export default function SecurityPanel({ token, role, onRestored }: SecurityPanel
               <Icon name={open ? "ChevronUp" : "ChevronDown"} size={15} className="text-slate-400" />
             </div>
             <div className="text-xs text-slate-500 mt-0.5">
-              {isDirector ? "Журнал действий, сотрудники, корзина и копии" : "Корзина и резервные копии"}
+              Журнал действий, сотрудники, корзина и копии
             </div>
           </div>
         </button>
@@ -134,22 +129,18 @@ export default function SecurityPanel({ token, role, onRestored }: SecurityPanel
           )}
 
           <div className="flex items-center gap-1 bg-slate-100 rounded-full p-1 mb-3 w-fit">
-            {isDirector && (
-              <>
-                <button
-                  onClick={() => setTab("log")}
-                  className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${tab === "log" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
-                >
-                  Журнал
-                </button>
-                <button
-                  onClick={() => setTab("team")}
-                  className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${tab === "team" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
-                >
-                  Сотрудники
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => setTab("log")}
+              className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${tab === "log" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
+            >
+              Журнал
+            </button>
+            <button
+              onClick={() => setTab("team")}
+              className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${tab === "team" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
+            >
+              Сотрудники
+            </button>
             <button
               onClick={() => setTab("trash")}
               className={`text-xs font-medium rounded-full px-3 py-1.5 transition ${tab === "trash" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
@@ -160,7 +151,7 @@ export default function SecurityPanel({ token, role, onRestored }: SecurityPanel
 
           {loading && <div className="text-sm text-slate-400 py-4 text-center">Загружаем…</div>}
 
-          {tab === "log" && isDirector && (
+          {tab === "log" && (
             <>
               <div className="flex gap-1.5 mb-2">
                 {[
@@ -208,7 +199,7 @@ export default function SecurityPanel({ token, role, onRestored }: SecurityPanel
             </>
           )}
 
-          {tab === "team" && isDirector && (
+          {tab === "team" && (
             <div className="space-y-2">
               {team.map(m => (
                 <div key={m.id} className="border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-2 flex-wrap">
@@ -306,16 +297,14 @@ export default function SecurityPanel({ token, role, onRestored }: SecurityPanel
                 <div className="text-xs font-medium text-slate-500">
                   Резервные копии · создаются автоматически раз в месяц
                 </div>
-                {isDirector && (
-                  <button
-                    onClick={() => act(func2url.security, { action: "backup" }, "Копия создана")}
-                    disabled={busy}
-                    className="text-xs border border-slate-200 text-slate-600 rounded-lg px-3 py-1.5 hover:bg-slate-50 transition disabled:opacity-50 flex items-center gap-1"
-                  >
-                    <Icon name="DatabaseBackup" size={13} />
-                    {busy ? "Создаём…" : "Создать копию"}
-                  </button>
-                )}
+                <button
+                  onClick={() => act(func2url.security, { action: "backup" }, "Копия создана")}
+                  disabled={busy}
+                  className="text-xs border border-slate-200 text-slate-600 rounded-lg px-3 py-1.5 hover:bg-slate-50 transition disabled:opacity-50 flex items-center gap-1"
+                >
+                  <Icon name="DatabaseBackup" size={13} />
+                  {busy ? "Создаём…" : "Создать копию"}
+                </button>
               </div>
               {backups.length === 0 ? (
                 <div className="text-sm text-slate-400 py-3 text-center">Копий пока нет</div>

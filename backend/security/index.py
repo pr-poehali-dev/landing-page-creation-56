@@ -159,6 +159,12 @@ def handler(event: dict, context) -> dict:
         return {'statusCode': 401, 'headers': out,
                 'body': json.dumps({'error': 'Сессия истекла, войдите снова'}, ensure_ascii=False)}
 
+    if staff['role'] != 'director':
+        cur.close(); conn.close()
+        return {'statusCode': 403, 'headers': out,
+                'body': json.dumps({'error': 'Раздел доступен руководителю'},
+                                   ensure_ascii=False)}
+
     if method == 'GET':
         cur.execute(
             "SELECT id, entity, entity_id, title, removed_by, restore_until, created_at "
