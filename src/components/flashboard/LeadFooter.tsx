@@ -299,22 +299,23 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
                     </span>
                   </label>
                   {error && <div className="fb-formerr">{error}</div>}
-                  <button type="submit" className="fb-btn fb-tg" disabled={sending}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
-                    {sending && channel === "tg" ? "Отправляем…" : "Отправить заявку в Telegram"}
-                  </button>
-                  <button
-                    type="button"
-                    className="fb-btn fb-mail"
-                    disabled={sending}
-                    onClick={e => send("mail", e)}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 6 10-6" /></svg>
-                    {sending && channel === "mail" ? "Отправляем…" : "Отправить на почту"}
-                  </button>
+                  <div className="fb-actions">
+                    <button type="submit" className="fb-btn fb-tg" disabled={sending}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 10.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.7-.9l3.1-14.6c.3-1.3-.5-1.9-1.6-1.5zM8.5 13.9l9.8-6.2c.5-.3.9-.1.6.2l-8.1 7.3-.3 3.3-1.5-4.6z" /></svg>
+                      {sending && channel === "tg" ? "Отправляем…" : "Отправить в Telegram"}
+                    </button>
+                    <button
+                      type="button"
+                      className="fb-btn fb-mail"
+                      disabled={sending}
+                      onClick={e => send("mail", e)}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 6 10-6" /></svg>
+                      {sending && channel === "mail" ? "Отправляем…" : "Отправить на почту"}
+                    </button>
+                  </div>
                   <div className="fb-pp">
-                    Любая кнопка сразу сохраняет заявку у нас — выберите, как вам удобнее продолжить общение.
-                    Мы не передаём контакты третьим лицам.
+                    Заявка сохраняется у нас в любом случае — выберите, как удобнее продолжить общение.
                   </div>
                 </form>
               )}
