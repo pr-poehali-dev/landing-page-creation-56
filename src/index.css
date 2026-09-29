@@ -387,6 +387,30 @@
   transition: transform 0.15s linear;
   will-change: transform;
 }
+#flashboard-landing .fb-screenvid {
+  position: absolute;
+  left: 39.33%;
+  top: 20.90%;
+  width: 18.5%;
+  height: 41.8%;
+  overflow: hidden;
+  transition: transform 0.15s linear;
+  will-change: transform;
+  pointer-events: none;
+}
+#flashboard-landing .fb-screenvid video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+#flashboard-landing .fb-screenvid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 42%);
+  pointer-events: none;
+}
 #flashboard-landing .fb-imgcap {
   position: absolute;
   bottom: 18px;
@@ -2064,7 +2088,8 @@ html {
   #flashboard-landing .fb-card,
   #flashboard-landing .fb-step,
   #flashboard-landing .fb-plan,
-  #flashboard-landing .fb-heroimg img {
+  #flashboard-landing .fb-heroimg img,
+  #flashboard-landing .fb-screenvid {
     transition: none;
   }
 }

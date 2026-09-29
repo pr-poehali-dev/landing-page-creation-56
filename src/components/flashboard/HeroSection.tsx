@@ -116,6 +116,17 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
           </div>
           <div className="fb-heroimg" ref={imgRef}>
             <img src={heroImage} alt="Уличный экран Флэшборд на ТЦ Изумруд Плаза, Владивосток" style={{ transform: `translateY(${offset}px)` }} />
+            <div className="fb-screenvid" style={{ transform: `translateY(${offset}px)` }}>
+              <video
+                src="/screen-loop.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                aria-label="Пример рекламного ролика на экране Флэшборд"
+              />
+            </div>
             <div className="fb-imgcap">
               <div className="fb-t">Размер экрана</div>
               <div className="fb-b">5,76 × 8,64 м · видимость до 80 м</div>
