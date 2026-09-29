@@ -328,17 +328,7 @@ export default function LeadFooter({ preset }: LeadFooterProps) {
         <div className="fb-wrap fb-fgrid">
           <div>
             <a className="fb-logo" href="#top" style={{ marginBottom: 16 }}>
-              <b>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="4" width="18" height="14" rx="2" stroke="#fff" strokeWidth="2" />
-                  <circle cx="8" cy="9" r="1" fill="#fff" />
-                  <circle cx="12" cy="9" r="1" fill="#fff" />
-                  <circle cx="16" cy="9" r="1" fill="#fff" />
-                  <circle cx="8" cy="13" r="1" fill="#fff" />
-                  <circle cx="12" cy="13" r="1" fill="#fff" />
-                </svg>
-              </b>
-              <span translate="no">Флэшборд</span>
+              <img src="/izumrud-logo-footer.png" alt="Медиафасад Изумруд" />
             </a>
             <p style={{ marginTop: 14, lineHeight: 1.6 }}>Реклама на уличных экранах Владивостока.</p>
             <div className="fb-req">

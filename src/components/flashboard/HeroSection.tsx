@@ -50,17 +50,7 @@ export default function HeroSection({ scrolled, menuOpen, setMenuOpen }: HeroSec
       <header id="hdr" className={scrolled ? "fb-scrolled" : ""}>
         <div className="fb-hbar">
           <a className="fb-logo" href="#top">
-            <b>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="14" rx="2" stroke="#fff" strokeWidth="2" />
-                <circle cx="8" cy="9" r="1" fill="#fff" />
-                <circle cx="12" cy="9" r="1" fill="#fff" />
-                <circle cx="16" cy="9" r="1" fill="#fff" />
-                <circle cx="8" cy="13" r="1" fill="#fff" />
-                <circle cx="12" cy="13" r="1" fill="#fff" />
-              </svg>
-            </b>
-            <span translate="no">Флэшборд</span>
+            <img src="/izumrud-logo-header.png" alt="Медиафасад Изумруд" />
           </a>
           <nav>
             {NAV_LINKS.map(l => (

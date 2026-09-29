@@ -207,20 +207,13 @@
 #flashboard-landing .fb-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
   text-decoration: none;
-  color: #fff;
-  font-family: "Manrope";
-  font-weight: 800;
-  font-size: 19px;
 }
-#flashboard-landing .fb-logo b {
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #f43f5e, #7c3aed);
-  display: grid;
-  place-items: center;
+#flashboard-landing .fb-logo img {
+  height: 34px;
+  width: auto;
+  display: block;
+  border-radius: 8px;
 }
 #flashboard-landing nav {
   display: flex;
@@ -390,7 +383,7 @@
 #flashboard-landing .fb-screenvid {
   position: absolute;
   left: 39.33%;
-  top: 20.90%;
+  top: 20.9%;
   width: 18.5%;
   height: 41.8%;
   overflow: hidden;
@@ -408,7 +401,11 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 42%);
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0) 42%
+  );
   pointer-events: none;
 }
 #flashboard-landing .fb-imgcap {
@@ -2278,8 +2275,12 @@ html {
   animation: fb-fade 0.2s ease;
 }
 @keyframes fb-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .fb-modal {
   background: #fff;
@@ -2294,8 +2295,14 @@ html {
   animation: fb-modal-in 0.25s ease;
 }
 @keyframes fb-modal-in {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .fb-modal-head {
   display: flex;
