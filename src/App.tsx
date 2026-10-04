@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
+import LegacyRedirect from "@/components/LegacyRedirect";
 import CookieBanner from "@/components/flashboard/CookieBanner";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,12 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/boards/*" element={<LegacyRedirect to="#pricing" />} />
+          <Route path="/calculate/*" element={<LegacyRedirect to="#calculator" />} />
+          <Route path="/cases/*" element={<LegacyRedirect to="#clients" />} />
+          <Route path="/contacts/*" element={<LegacyRedirect to="#lead" />} />
+          <Route path="/order/*" element={<LegacyRedirect to="#lead" />} />
+          <Route path="/index.php" element={<LegacyRedirect to="" />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
